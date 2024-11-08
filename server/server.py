@@ -1,5 +1,5 @@
 from telegram import Bot, Update
-from telegram.ext import Application, ApplicationBuilder, CommandHandle, Updater
+from telegram.ext import Application, ApplicationBuilder, CommandHandler, Updater
 import os
 import requests
 import asyncio
