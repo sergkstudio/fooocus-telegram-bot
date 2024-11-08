@@ -8,6 +8,8 @@ from flask import Flask, request
 app = Flask(__name__)
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 bot = Bot(token=BOT_TOKEN)
+logging.basicConfig(level=logging.INFO)
+
 
 # Генерация изображения
 def generate_image(prompt):
@@ -37,15 +39,15 @@ async def handle_generate(update: Update, context):
         await update.message.reply_text("Не удалось сгенерировать изображение.")
 
 # Асинхронная обработка вебхуков
+def run_telegram_bot():
+    application = Application.builder().token(BOT_TOKEN).build()
+    application.add_handler(CommandHandler("generate", handle_generate))
+    application.run_polling()
+
 @app.route('/telegram/message', methods=['POST'])
 def telegram_webhook():
     update = Update.de_json(request.get_json(force=True), bot)
-    application = Application.builder().token(BOT_TOKEN).build()
-    application.add_handler(CommandHandler("generate", handle_generate))
-
-    # Синхронная обработка обновления
-    application.update_queue.put(update)
-
+    threading.Thread(target=run_telegram_bot).start()
     return "OK", 200
 
 if __name__ == "__main__":
