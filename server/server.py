@@ -29,9 +29,6 @@ async def handle_generate(update: Update, context):
     else:
         await update.message.reply_text("Не удалось сгенерировать изображение.")
 
-async def start(update: Update, context):
-    await update.message.reply_text('Привет!')
-
 @app.route('/telegram/message', methods=['POST'])
 def telegram_webhook():
     loop = asyncio.new_event_loop()
@@ -42,9 +39,8 @@ def telegram_webhook():
     update = Update.de_json(data, bot)
     
     application = Application.builder().token(BOT_TOKEN).build()
-    application.add_handler(CommandHandler("start", start))  # Обработчик для команды /start
-    
-    loop.run_until_complete(application.process_update(update))
+    application.add_handler(CommandHandler("generate", handle_generate))
+    application.process_update(update)
     
     return 'OK', 200
 
