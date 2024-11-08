@@ -14,4 +14,4 @@ RUN pip install -r server/requirements.txt
 COPY server /app/server
 
 # Команда запускает сервер и бота
-CMD ["sh", "-c", "python3 /app/server/server.py & python3 /app/bot/bot.py"]
+CMD ["sh", "-c", "python3 /app/server/server.py"]
