@@ -8,7 +8,6 @@ from flask import Flask, request
 app = Flask(__name__)
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 bot = Bot(token=BOT_TOKEN)
-logging.basicConfig(level=logging.INFO)
 
 
 # Генерация изображения
