@@ -8,18 +8,18 @@ app = Flask(__name__)
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 bot = Bot(token=BOT_TOKEN)
 
-# Функция для генерации изображения
+# Определяем функцию для генерации изображения
 def generate_image(prompt):
-    api_url = "https://sd.klepinin.space/api/generate"  # Замените на актуальный эндпоинт из документации
+    api_url = "https://sd.klepinin.space/api/generate"  # Замените на актуальный URL API
     payload = {
         "prompt": prompt,
-        "steps": 50,  # Задайте нужные параметры, исходя из документации
+        "steps": 50,
         "width": 512,
         "height": 512,
     }
     response = requests.post(api_url, json=payload)
     response_data = response.json()
-    return response_data.get("image_url")  # Извлеките URL изображения из ответа API
+    return response_data.get("image_url")
 
 # Команда /generate для Telegram
 async def handle_generate(update: Update, context):
@@ -41,7 +41,6 @@ def telegram_webhook():
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("generate", handle_generate))
     
-    # Обработка входящего сообщения
     application.process_update(update)
     return "OK", 200
 
