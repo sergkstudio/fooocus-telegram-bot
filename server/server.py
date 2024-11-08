@@ -1,13 +1,11 @@
 from flask import Flask, request
 from telegram import Bot, Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
+from telegram.ext import Application, CommandHandler
 from gradio_client import Client
 import asyncio
 import os
 
 app = Flask(__name__)
-
-# Замените на ваш реальный токен бота
 BOT_TOKEN = '8106530957:AAGTNBqOjVKXvma9EVl7efMR1Qcxow5BvkA'
 bot = Bot(token=BOT_TOKEN)
 
@@ -16,7 +14,7 @@ client = Client("https://sd.klepinin.space")
 
 # Функция для генерации изображения
 def generate_image(prompt):
-    response = client.predict(prompt, fn_index=0)  # Укажите корректный `fn_index`
+    response = client.predict(prompt, fn_index=0)
     return response if isinstance(response, str) else None
 
 # Обработчик команды /generate для Telegram
@@ -33,18 +31,13 @@ async def handle_generate(update: Update, context):
     else:
         await update.message.reply_text("Не удалось сгенерировать изображение.")
 
-# Основной обработчик обновлений
 @app.route('/telegram/message', methods=['POST'])
 def telegram_webhook():
     update = Update.de_json(request.get_json(force=True), bot)
     application = Application.builder().token(BOT_TOKEN).build()
-    
-    # Добавление обработчиков команд
     application.add_handler(CommandHandler("generate", handle_generate))
     
-    # Обработка обновлений
     application.process_update(update)
-    
     return "OK", 200
 
 if __name__ == "__main__":
