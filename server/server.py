@@ -8,13 +8,18 @@ app = Flask(__name__)
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 bot = Bot(token=BOT_TOKEN)
 
-# Инициализация клиента Gradio
-client = os.getenv("FOOCUS_URL")
-
 # Функция для генерации изображения
 def generate_image(prompt):
-    response = client.predict(prompt, fn_index=0)
-    return response if isinstance(response, str) else None
+    api_url = "https://sd.klepinin.space/api/generate"  # Замените на актуальный эндпоинт из документации
+    payload = {
+        "prompt": prompt,
+        "steps": 50,  # Задайте нужные параметры, исходя из документации
+        "width": 512,
+        "height": 512,
+    }
+    response = requests.post(api_url, json=payload)
+    response_data = response.json()
+    return response_data.get("image_url")  # Извлеките URL изображения из ответа API
 
 # Команда /generate для Telegram
 async def handle_generate(update: Update, context):
