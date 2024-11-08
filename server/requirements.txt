@@ -1,4 +1,5 @@
 flask
+flask[async]
 python-telegram-bot
 gradio_client
 python-dotenv
