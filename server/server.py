@@ -42,10 +42,10 @@ async def telegram_webhook():
     update = Update.de_json(request.get_json(force=True), bot)
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("generate", handle_generate))
-
-    # Обработка обновлений
-    await application.update_queue.put(update)
     
+    # Убедитесь, что обновление обрабатывается правильно
+    await application.process_update(update)
+
     return "OK", 200
 
 if __name__ == "__main__":
