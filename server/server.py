@@ -48,5 +48,5 @@ def telegram_webhook():
 
 if __name__ == "__main__":
     # Устанавливаем вебхук для бота
-    bot.set_webhook(url="https://ваш_сервер/telegram/message")
+    asyncio.run(bot.set_webhook(url="https://sd.bot.klepinin.space/telegram/message"))
     app.run(host="0.0.0.0", port=5000)
