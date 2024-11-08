@@ -1,11 +1,20 @@
 from flask import Flask, request
 from telegram import Bot, Update
 from telegram.ext import Dispatcher, CommandHandler
+from gradio_client import Client
 import os
 
 app = Flask(__name__)
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 bot = Bot(token=BOT_TOKEN)
+
+# Инициализация клиента Gradio
+client = Client("https://sd.klepinin.space")
+
+# Функция для генерации изображения
+def generate_image(prompt):
+    response = client.predict(prompt, fn_index=0)
+    return response if isinstance(response, str) else None
 
 def handle_generate(update, context):
     prompt = ' '.join(context.args)
@@ -15,7 +24,7 @@ def handle_generate(update, context):
 
     update.message.reply_text("Генерирую изображение, подождите...")
     # Здесь должна быть функция для генерации изображения
-    image_url = "https://example.com/generated_image.jpg"  # Пример
+    image_url = generate_image(prompt)
     update.message.reply_photo(photo=image_url, caption="Вот ваше изображение!")
 
 @app.route('/telegram/message', methods=['POST'])
