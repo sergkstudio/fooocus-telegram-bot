@@ -11,9 +11,9 @@ bot = Bot(token=BOT_TOKEN)
 # Инициализация клиента Gradio
 client = Client("https://sd.klepinin.space")
 
-# Функция для генерации изображения с использованием Gradio API
+# Функция для генерации изображения
 def generate_image(prompt):
-    response = client.predict(prompt, fn_index=0)  # Укажите `fn_index` из документации
+    response = client.predict(prompt, fn_index=0)  # Укажите корректный `fn_index`
     return response if isinstance(response, str) else None
 
 # Обработчик команды /generate для Telegram
