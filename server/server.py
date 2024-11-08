@@ -1,6 +1,6 @@
 from flask import Flask, request
 from telegram import Bot, Update
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Application, CommandHandler
 import os
 
 app = Flask(__name__)
@@ -21,12 +21,11 @@ def handle_generate(update: Update, context):
 @app.route('/telegram/message', methods=['POST'])
 def telegram_webhook():
     update = Update.de_json(request.get_json(force=True), bot)
-    updater = Updater(BOT_TOKEN, use_context=True)
-    dispatcher = updater.dispatcher
-    dispatcher.add_handler(CommandHandler("generate", handle_generate))
+    application = Application.builder().token(BOT_TOKEN).build()
+    application.add_handler(CommandHandler("generate", handle_generate))
 
     # Обработка обновления
-    dispatcher.process_update(update)
+    application.process_update(update)
 
     return "OK", 200
 
