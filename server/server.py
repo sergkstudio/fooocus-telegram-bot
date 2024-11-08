@@ -1,5 +1,5 @@
 from telegram import Bot, Update
-from telegram.ext import Application, CommandHandler
+from telegram.ext import Application, ApplicationBuilder, CommandHandler
 import os
 import requests
 import asyncio
@@ -38,13 +38,13 @@ async def handle_generate(update: Update, context):
 
 # Асинхронная обработка вебхуков
 @app.route('/telegram/message', methods=['POST'])
-async def telegram_webhook():
+def telegram_webhook():
     update = Update.de_json(request.get_json(force=True), bot)
-    application = Application.builder().token(BOT_TOKEN).build()
+    application = Application.builder().token(BOT_TOKEN).initialize()  # Используйте initialize
     application.add_handler(CommandHandler("generate", handle_generate))
     
-    # Убедитесь, что обновление обрабатывается правильно
-    await application.process_update(update)
+    # Обработка обновлений
+    application.process_update(update)
 
     return "OK", 200
 
