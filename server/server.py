@@ -38,16 +38,14 @@ async def handle_generate(update: Update, context):
 
 # Асинхронная обработка вебхуков
 @app.route('/telegram/message', methods=['POST'])
-def telegram_webhook():
+async def telegram_webhook():
     update = Update.de_json(request.get_json(force=True), bot)
+    application = Application.builder().token(BOT_TOKEN).build()
+    application.add_handler(CommandHandler("generate", handle_generate))
 
-    async def run_async_application():
-        application = ApplicationBuilder().token(BOT_TOKEN).build()
-        application.add_handler(CommandHandler("generate", handle_generate))
-        await application.process_update(update)
-
-    asyncio.run(run_async_application())
-
+    # Обработка обновлений
+    await application.update_queue.put(update)
+    
     return "OK", 200
 
 if __name__ == "__main__":
