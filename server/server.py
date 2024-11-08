@@ -44,7 +44,7 @@ async def telegram_webhook():
     application.add_handler(CommandHandler("generate", handle_generate))
 
     # Обработка обновлений
-    await application.update_queue.put(update)
+    await application.process_update(update)
     
     return "OK", 200
 
