@@ -5,6 +5,8 @@ import os
 
 app = Flask(__name__)
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+bot = Bot(token=BOT_TOKEN)  # Инициализация bot
+    
 
 # Обработчик команды /generate
 async def handle_generate(update: Update, context):
