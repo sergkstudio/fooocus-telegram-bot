@@ -30,13 +30,15 @@ async def handle_generate(update: Update, context):
         await update.message.reply_text("Не удалось сгенерировать изображение.")
 
 @app.route('/telegram/message', methods=['POST'])
-async def telegram_webhook():
+def telegram_webhook():
+    BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")  # Подтверждаем, что токен доступен
+    bot = Bot(token=BOT_TOKEN)
     update = Update.de_json(request.get_json(force=True), bot)
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("generate", handle_generate))
     
     # Обработка входящего сообщения
-    await application.process_update(update)
+    application.process_update(update)
     return "OK", 200
 
 if __name__ == "__main__":
