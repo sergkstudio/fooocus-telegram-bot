@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 
 # Замените на ваш реальный токен бота
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = Bot(token=BOT_TOKEN)
 
 # Инициализация клиента Gradio
