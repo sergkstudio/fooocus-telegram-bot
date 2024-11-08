@@ -1,9 +1,9 @@
+import asyncio
 from flask import Flask, request
 from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler
 import os
 import requests
-import asyncio
 
 app = Flask(__name__)
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -36,16 +36,15 @@ async def handle_generate(update: Update, context):
     else:
         await update.message.reply_text("Не удалось сгенерировать изображение.")
 
+# Асинхронная обработка вебхуков
 @app.route('/telegram/message', methods=['POST'])
-def telegram_webhook():
+async def telegram_webhook():
     update = Update.de_json(request.get_json(force=True), bot)
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("generate", handle_generate))
-    
-    # Создание цикла событий для асинхронной функции
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(application.process_update(update))
+
+    # Обработка обновлений асинхронно
+    await application.process_update(update)
     
     return "OK", 200
 
