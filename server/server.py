@@ -39,6 +39,7 @@ def telegram_webhook():
     update = Update.de_json(data, bot)
     
     application = Application.builder().token(BOT_TOKEN).build()
+    application.initialize()
     application.add_handler(CommandHandler("generate", handle_generate))
     loop.run_until_complete(application.process_update(update))
         
