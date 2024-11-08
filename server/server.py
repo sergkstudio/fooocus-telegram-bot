@@ -1,26 +1,26 @@
-import asyncio
-from flask import Flask, request
 from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler
 import os
 import requests
+import asyncio
+from flask import Flask, request
 
 app = Flask(__name__)
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 bot = Bot(token=BOT_TOKEN)
 
-# Функция для генерации изображения
+# Генерация изображения
 def generate_image(prompt):
     api_url = "https://sd.klepinin.space/api/generate"  # Замените на актуальный эндпоинт из документации
     payload = {
         "prompt": prompt,
-        "steps": 50,  # Задайте нужные параметры, исходя из документации
+        "steps": 50,  # Задайте нужные параметры
         "width": 512,
         "height": 512,
     }
     response = requests.post(api_url, json=payload)
     response_data = response.json()
-    return response_data.get("image_url")  # Извлеките URL изображения из ответа API
+    return response_data.get("image_url")
 
 # Команда /generate для Telegram
 async def handle_generate(update: Update, context):
@@ -43,8 +43,8 @@ async def telegram_webhook():
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("generate", handle_generate))
 
-    # Обработка обновлений асинхронно
-    await application.process_update(update)
+    # Обработка обновлений
+    await application.update_queue.put(update)
     
     return "OK", 200
 
