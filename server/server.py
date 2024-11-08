@@ -1,27 +1,22 @@
 from flask import Flask, request
 from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler
+from gradio_client import Client
 import os
-import requests
 
 app = Flask(__name__)
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 bot = Bot(token=BOT_TOKEN)
 
-# Определяем функцию для генерации изображения
-def generate_image(prompt):
-    api_url = "https://sd.klepinin.space/api/generate"  # Замените на актуальный URL API
-    payload = {
-        "prompt": prompt,
-        "steps": 50,
-        "width": 512,
-        "height": 512,
-    }
-    response = requests.post(api_url, json=payload)
-    response_data = response.json()
-    return response_data.get("image_url")
+# Инициализация клиента Gradio
+client = Client("https://sd.klepinin.space")
 
-# Команда /generate для Telegram
+# Функция для генерации изображения с использованием Gradio API
+def generate_image(prompt):
+    response = client.predict(prompt, fn_index=0)  # Укажите `fn_index` из документации
+    return response if isinstance(response, str) else None
+
+# Обработчик команды /generate для Telegram
 async def handle_generate(update: Update, context):
     prompt = ' '.join(context.args)
     if not prompt:
