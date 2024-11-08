@@ -39,12 +39,16 @@ async def handle_generate(update: Update, context):
 # Асинхронная обработка вебхуков
 @app.route('/telegram/message', methods=['POST'])
 def telegram_webhook():
+    # Создаём объект Application с асинхронным обновлением
     update = Update.de_json(request.get_json(force=True), bot)
-    application = Application.builder().token(BOT_TOKEN).initialize()  # Используйте initialize
-    application.add_handler(CommandHandler("generate", handle_generate))
     
-    # Обработка обновлений
-    application.process_update(update)
+    async def run_async_application():
+        application = ApplicationBuilder().token(BOT_TOKEN).build()
+        application.add_handler(CommandHandler("generate", handle_generate))
+        await application.process_update(update)
+
+    # Запуск асинхронной задачи в потоке
+    asyncio.run(run_async_application())
 
     return "OK", 200
 
