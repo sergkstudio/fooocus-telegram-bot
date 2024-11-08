@@ -17,7 +17,7 @@ def generate_image(prompt):
     response = client.predict(prompt, fn_index=0)
     return response if isinstance(response, str) else None
 
-# Обработчик команды /generate для Telegram
+# Асинхронный обработчик команды /generate для Telegram
 async def handle_generate(update: Update, context):
     prompt = ' '.join(context.args)
     if not prompt:
@@ -34,10 +34,16 @@ async def handle_generate(update: Update, context):
 @app.route('/telegram/message', methods=['POST'])
 def telegram_webhook():
     update = Update.de_json(request.get_json(force=True), bot)
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    # Инициализация приложения Telegram
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("generate", handle_generate))
+
+    # Обработка обновлений
+    loop.run_until_complete(application.process_update(update))
     
-    application.process_update(update)
     return "OK", 200
 
 if __name__ == "__main__":
