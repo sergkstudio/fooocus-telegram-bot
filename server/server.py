@@ -40,10 +40,8 @@ def telegram_webhook():
     
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("generate", handle_generate))
-    application.process_update(update)
-    
-    application.run_polling()
-    
+    loop.run_until_complete(application.process_update(update))
+        
     return 'OK', 200
 
 if __name__ == "__main__":
