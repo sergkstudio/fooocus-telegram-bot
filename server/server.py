@@ -38,7 +38,7 @@ def telegram_webhook():
     asyncio.set_event_loop(loop)
 
     # Инициализация приложения Telegram с использованием initialize
-    application = Application(BOT_TOKEN)
+    application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("generate", handle_generate))
 
     # Обработка обновлений
