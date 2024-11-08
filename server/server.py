@@ -40,12 +40,11 @@ async def handle_generate(update: Update, context):
 @app.route('/telegram/message', methods=['POST'])
 def telegram_webhook():
     update = Update.de_json(request.get_json(force=True), bot)
-    updater = Updater(BOT_TOKEN, use_context=True)
-    dp = updater.dispatcher
-    dp.add_handler(CommandHandler("generate", handle_generate))
+    application = Application.builder().token(BOT_TOKEN).build()
+    application.add_handler(CommandHandler("generate", handle_generate))
 
     # Синхронная обработка обновления
-    dp.process_update(update)
+    application.update_queue.put(update)
 
     return "OK", 200
 
