@@ -2,6 +2,7 @@ from flask import Flask, request
 from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from gradio_client import Client
+import asyncio
 import os
 
 app = Flask(__name__)
