@@ -4,7 +4,7 @@ from telegram.ext import Application, CommandHandler
 import os
 
 app = Flask(__name__)
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+BOT_TOKEN = '8106530957:AAGTNBqOjVKXvma9EVl7efMR1Qcxow5BvkA'
 bot = Bot(token=BOT_TOKEN)
 
 async def handle_generate(update: Update, context):
