@@ -3,6 +3,7 @@ from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler
 import os
 import requests
+import asyncio
 
 app = Flask(__name__)
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -41,8 +42,11 @@ def telegram_webhook():
     application = Application.builder().token(BOT_TOKEN).build()
     application.add_handler(CommandHandler("generate", handle_generate))
     
-    # Запуск асинхронной обработки
-    asyncio.run(application.process_update(update))
+    # Создание цикла событий для асинхронной функции
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(application.process_update(update))
+    
     return "OK", 200
 
 if __name__ == "__main__":
