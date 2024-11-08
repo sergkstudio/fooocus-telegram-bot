@@ -1,7 +1,7 @@
 from flask import Flask, request
 import os
 import asyncio
-from telegram import Update
+from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler
 
 app = Flask(__name__)
