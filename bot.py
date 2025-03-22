@@ -12,7 +12,7 @@ load_dotenv()
 # Настройка логирования
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=logging.DEBUG  # Изменяем уровень на DEBUG для более подробного логирования
 )
 logger = logging.getLogger(__name__)
 
@@ -22,16 +22,7 @@ FOOOCUS_API_URL = os.getenv('FOOOCUS_API_URL', 'http://localhost:7865')
 
 # Инициализация клиента Gradio
 client = Client(FOOOCUS_API_URL)
-
-# Выводим список доступных эндпоинтов при запуске
-logger.info("Доступные эндпоинты:")
-try:
-    # Получаем список всех доступных эндпоинтов
-    endpoints = client.endpoints
-    for endpoint_name in endpoints:
-        logger.info(f"- {endpoint_name}")
-except Exception as e:
-    logger.error(f"Ошибка при получении списка эндпоинтов: {str(e)}")
+logger.info(f"Инициализирован клиент Gradio с URL: {FOOOCUS_API_URL}")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start"""
@@ -43,6 +34,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик текстовых сообщений для генерации изображений"""
     prompt = update.message.text
+    logger.info(f"Получен запрос на генерацию изображения с промптом: {prompt}")
     
     # Отправляем сообщение о начале генерации
     status_message = await update.message.reply_text('Генерирую изображение...')
@@ -50,7 +42,10 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Создаем временную директорию для сохранения изображения
         with tempfile.TemporaryDirectory() as temp_dir:
+            logger.debug(f"Создана временная директория: {temp_dir}")
+            
             # Запускаем генерацию изображения через Gradio API с полным набором параметров
+            logger.debug("Начинаем вызов API Fooocus...")
             result = client.predict(
                 False,  # Generate Image Grid for Each Batch
                 prompt,  # Prompt
@@ -103,19 +98,24 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 fn_index=67
             )
             
+            logger.debug(f"Получен результат от API: {result}")
+            
             if result and isinstance(result, str):
+                logger.info(f"Успешно сгенерировано изображение: {result}")
                 # Отправляем изображение в чат
                 await update.message.reply_photo(result)
                 await status_message.delete()
             else:
+                logger.error(f"Неверный формат результата: {result}")
                 await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
                 
     except Exception as e:
-        logger.error(f'Ошибка при генерации изображения: {str(e)}')
+        logger.error(f'Ошибка при генерации изображения: {str(e)}', exc_info=True)
         await status_message.edit_text('Произошла ошибка при генерации изображения')
 
 def main():
     """Основная функция запуска бота"""
+    logger.info("Запуск бота...")
     # Создаем приложение
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
@@ -124,6 +124,7 @@ def main():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, generate_image))
 
     # Запускаем бота
+    logger.info("Бот успешно запущен и готов к работе")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
