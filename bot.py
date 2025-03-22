@@ -54,7 +54,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				False,			# 'Read wildcards in order' Checkbox
 				2,				# [0.0, 30.0] in 'Image Sharpness' Slider
 				7,				# [1.0, 30.0] in 'Guidance Scale' Slider
-				"animaPencilXL_v500.safetensors",	# 'Base Model (SDXL only)' Dropdown
+				"juggernautXL_v8Rundiffusion.safetensors",	# 'Base Model (SDXL only)' Dropdown
 				"None",			# 'Refiner (SDXL or SD 1.5)' Dropdown
 				0.5,			# [0.1, 1.0] in 'Refiner Switch At' Slider
                 ################################################################
