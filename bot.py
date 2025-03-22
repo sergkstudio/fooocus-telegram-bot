@@ -98,46 +98,17 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Второй вызов API для получения изображения
             result = client.predict(fn_index=68)
             logger.info(f"Результат второго вызова API: {result}")
-            logger.info(f"Тип результата: {type(result)}")
             
-            # Пробуем разные способы получения изображения
-            image_path = None
-            
-            # Способ 1: Проверяем, является ли результат строкой
-            if isinstance(result, str):
-                image_path = result
-                logger.info(f"Результат - строка: {image_path}")
-            
-            # Способ 2: Проверяем, является ли результат словарем
-            elif isinstance(result, dict):
-                if 'image' in result:
-                    image_path = result['image']
-                    logger.info(f"Результат - словарь с ключом 'image': {image_path}")
-                else:
-                    logger.info(f"Содержимое словаря: {result}")
-            
-            # Способ 3: Проверяем, является ли результат списком или кортежем
-            elif isinstance(result, (list, tuple)):
-                if len(result) > 0:
-                    image_path = result[0]
-                    logger.info(f"Результат - список/кортеж: {image_path}")
-                else:
-                    logger.info("Результат - пустой список/кортеж")
-            
-            # Способ 4: Пробуем получить изображение напрямую из API
-            try:
-                direct_result = client.predict(fn_index=67, api_name="/generate")
-                logger.info(f"Прямой результат API: {direct_result}")
-            except Exception as e:
-                logger.error(f"Ошибка при прямом вызове API: {str(e)}")
-            
-            # Если нашли путь к изображению, отправляем его
-            if image_path:
-                logger.info(f"Отправляем изображение: {image_path}")
+            # Проверяем, что результат - кортеж и содержит нужное количество элементов
+            if isinstance(result, tuple) and len(result) >= 3:
+                # Берем третий элемент (индекс 2) - 'Finished Images'
+                image_path = result[2]
+                logger.info(f"Путь к изображению: {image_path}")
+                # Отправляем изображение в чат
                 await update.message.reply_photo(image_path)
                 await status_message.delete()
             else:
-                logger.error(f"Не удалось получить путь к изображению из результата: {result}")
+                logger.error(f"Неверный формат результата: {result}")
                 await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
                 
     except Exception as e:
