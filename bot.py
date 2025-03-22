@@ -52,7 +52,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         with tempfile.TemporaryDirectory() as temp_dir:
             # Создаем список аргументов для генерации изображения
             args = [prompt]  # начинаем с промпта
-            args.extend([None] * 152)  # добавляем остальные аргументы как None
+            args.extend([None] * 151)  # добавляем остальные аргументы как None
             
             # Запускаем генерацию изображения через Gradio API
             result = client.predict(*args, fn_index=67)
