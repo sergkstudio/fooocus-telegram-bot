@@ -1,9 +1,8 @@
 import os
 import logging
-import requests
-import json
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from gradio_client import Client
 from dotenv import load_dotenv
 import tempfile
 
@@ -19,7 +18,20 @@ logger = logging.getLogger(__name__)
 
 # Конфигурация
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-FOOOCUS_API_URL = os.getenv('FOOOCUS_API_URL', 'http://localhost:8888')
+FOOOCUS_API_URL = os.getenv('FOOOCUS_API_URL', 'http://localhost:7865')
+
+# Инициализация клиента Gradio
+client = Client(FOOOCUS_API_URL)
+
+# Выводим список доступных эндпоинтов при запуске
+logger.info("Доступные эндпоинты:")
+try:
+    # Получаем список всех доступных эндпоинтов
+    endpoints = client.endpoints
+    for endpoint_name in endpoints:
+        logger.info(f"- {endpoint_name}")
+except Exception as e:
+    logger.error(f"Ошибка при получении списка эндпоинтов: {str(e)}")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start"""
@@ -36,29 +48,67 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_message = await update.message.reply_text('Генерирую изображение...')
     
     try:
-        # Создаем параметры для запроса
-        params = {
-            "prompt": prompt,
-            "async_process": False  # Синхронный режим для простоты
-        }
-        
-        # Отправляем запрос к API
-        response = requests.post(
-            url=f"{FOOOCUS_API_URL}/v1/generation/text-to-image",
-            data=json.dumps(params),
-            headers={"Content-Type": "application/json"}
-        )
-        
-        if response.status_code == 200:
-            result = response.json()
-            if "url" in result:
+        # Создаем временную директорию для сохранения изображения
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Запускаем генерацию изображения через Gradio API с полным набором параметров
+            result = client.predict(
+                False,  # Generate Image Grid for Each Batch
+                prompt,  # Prompt
+                "!",  # Negative Prompt
+                ["Fooocus V2"],  # Selected Styles
+                "Quality",  # Performance
+                "1280×768",  # Aspect Ratios
+                1,  # Image Number
+                "png",  # Output Format
+                "0",  # Seed
+                False,  # Read wildcards in order
+                2,  # Image Sharpness
+                7,  # Guidance Scale
+                "animaPencilXL_v500.safetensors",  # Base Model
+                "None",  # Refiner
+                0.5,  # Refiner Switch At
+                # LoRA settings
+                True, "None", -2,  # LoRA 1
+                True, "None", -2,  # LoRA 2
+                True, "None", -2,  # LoRA 3
+                True, "None", -2,  # LoRA 4
+                True, "None", -2,  # LoRA 5
+                # Input Image settings
+                False, "", "Disabled", "", ["Left"], "", "", "",
+                # Developer Debug Mode
+                True, True, True, False, 1.5, 0.8, 0.3, 7, 2,
+                "dpmpp_2m_sde_gpu", "karras", "Default (model)",
+                -1, -1, -1, -1, -1, -1, False, False, False, False,
+                64, 128, "joint", 0.25, False, 1.01, 1.02, 0.99, 0.95,
+                False, False, "v2.6", 1, 0.618,
+                # MISC
+                False, False, 0, False, False, "fooocus",
+                # Image Prompt settings
+                "", 0, 0, "ImagePrompt",  # Image 1
+                "", 0, 0, "ImagePrompt",  # Image 2
+                "", 0, 0, "ImagePrompt",  # Image 3
+                "", 0, 0, "ImagePrompt",  # Image 4
+                False, 0, False, "",
+                # Enhance settings
+                False, "Disabled", "Before First Enhancement", "Original Prompts",
+                # Enhance #1
+                False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
+                "v2.6", 1, 0.618, 0, False,
+                # Enhance #2
+                False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
+                "v2.6", 1, 0.618, 0, False,
+                # Enhance #3
+                False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
+                "v2.6", 1, 0.618, 0, False,
+                fn_index=67
+            )
+            
+            if result and isinstance(result, str):
                 # Отправляем изображение в чат
-                await update.message.reply_photo(result["url"])
+                await update.message.reply_photo(result)
                 await status_message.delete()
             else:
                 await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
-        else:
-            await status_message.edit_text(f'Ошибка API: {response.status_code}')
                 
     except Exception as e:
         logger.error(f'Ошибка при генерации изображения: {str(e)}')
