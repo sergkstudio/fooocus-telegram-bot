@@ -43,7 +43,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Первый вызов API для генерации изображения
             result = client.predict(
 				False,			# 'Generate Image Grid for Each Batch'
-				"a girl sitting in chair",	# str in 'Prompt' Textbox
+				prompt,	# str in 'Prompt' Textbox
 				"!",			# 'Negative Prompt' Textbox 
 				["Fooocus V2"],	# List[str] in 'Selected Styles' Checkboxgroup
 				"Quality",		# str in 'Performance' Radio
@@ -218,6 +218,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				False,	# 'Invert Mask' Checkbox
 				fn_index=67
             )
+            result = client.predict(fn_index=68)
             
             logger.info(f"Результат первого вызова API: {result}")
             
