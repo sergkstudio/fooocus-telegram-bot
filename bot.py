@@ -2,8 +2,9 @@ import os
 import logging
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-import requests
+from gradio_client import Client
 from dotenv import load_dotenv
+import tempfile
 
 # Загрузка переменных окружения
 load_dotenv()
@@ -17,7 +18,10 @@ logger = logging.getLogger(__name__)
 
 # Конфигурация
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-FOOOCUS_API_URL = os.getenv('FOOOCUS_API_URL', 'http://localhost:8188')
+FOOOCUS_API_URL = os.getenv('FOOOCUS_API_URL', 'http://localhost:7865')
+
+# Инициализация клиента Gradio
+client = Client(FOOOCUS_API_URL)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start"""
@@ -34,25 +38,21 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_message = await update.message.reply_text('Генерирую изображение...')
     
     try:
-        # Отправляем запрос к Fooocus API
-        response = requests.post(
-            f'{FOOOCUS_API_URL}/generate',
-            json={'prompt': prompt}
-        )
-        
-        if response.status_code == 200:
-            # Получаем URL сгенерированного изображения
-            image_url = response.json().get('image_url')
+        # Создаем временную директорию для сохранения изображения
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Запускаем генерацию изображения через Gradio API
+            result = client.predict(
+                prompt,
+                api_name="/generate_image"  # Имя эндпоинта из Fooocus API
+            )
             
-            if image_url:
+            if result and isinstance(result, str):
                 # Отправляем изображение в чат
-                await update.message.reply_photo(image_url)
+                await update.message.reply_photo(result)
                 await status_message.delete()
             else:
-                await status_message.edit_text('Ошибка: не удалось получить URL изображения')
-        else:
-            await status_message.edit_text(f'Ошибка при генерации изображения: {response.status_code}')
-            
+                await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
+                
     except Exception as e:
         logger.error(f'Ошибка при генерации изображения: {str(e)}')
         await status_message.edit_text('Произошла ошибка при генерации изображения')
