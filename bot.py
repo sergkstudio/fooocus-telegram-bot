@@ -47,23 +47,8 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         with tempfile.TemporaryDirectory() as temp_dir:
             # Запускаем генерацию изображения через Gradio API
             result = client.predict(
-                prompt,  # prompt
-                "Fooocus V2",  # style
-                "Fooocus Enhance",  # performance
-                "1024×1024",  # aspect_ratios
-                "0",  # image_number
-                "None",  # image_seed
-                "None",  # sharpness
-                "None",  # guidance_scale
-                "None",  # base_model_name
-                "None",  # refiner_model_name
-                "None",  # refiner_switch
-                "None",  # loras
-                "None",  # input_image_checkbox
-                "None",  # current_tab
-                "None",  # save_metadata_to_images
-                "None",  # metadata_scheme
-                api_name="/generate"
+                prompt,
+                api_name="/generate_image"  # Используем правильный эндпоинт Fooocus
             )
             
             if result and isinstance(result, str):
