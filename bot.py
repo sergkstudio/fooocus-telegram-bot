@@ -40,7 +40,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Создаем временную директорию для сохранения изображения
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Первый вызов API для генерации изображения
+            # Вызов API для генерации изображения
             result = client.predict(
                 False,  # Generate Image Grid for Each Batch
                 prompt,  # Prompt
@@ -90,23 +90,22 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 # Enhance #3
                 False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
                 "v2.6", 1, 0.618, 0, False,
-                fn_index=67
+                api_name="/generate"
             )
             
-            logger.info(f"Результат первого вызова API: {result}")
+            logger.info(f"Результат вызова API: {result}")
             
-            # Второй вызов API для получения изображения
-            result = client.predict(fn_index=68)
-            logger.info(f"Результат второго вызова API: {result}")
-            
-            # Проверяем, что результат - кортеж и содержит нужное количество элементов
-            if isinstance(result, tuple) and len(result) >= 3:
-                # Берем третий элемент (индекс 2) - 'Finished Images'
-                image_path = result[2]
-                logger.info(f"Путь к изображению: {image_path}")
-                # Отправляем изображение в чат
-                await update.message.reply_photo(image_path)
-                await status_message.delete()
+            # Проверяем тип результата
+            if isinstance(result, dict):
+                if 'image' in result:
+                    image_path = result['image']
+                    logger.info(f"Путь к изображению: {image_path}")
+                    # Отправляем изображение в чат
+                    await update.message.reply_photo(image_path)
+                    await status_message.delete()
+                else:
+                    logger.error(f"В результате нет ключа 'image': {result}")
+                    await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
             else:
                 logger.error(f"Неверный формат результата: {result}")
                 await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
