@@ -95,24 +95,28 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             logger.info(f"Результат первого вызова API: {result}")
             
-            # Второй вызов API
-            result = client.predict(fn_index=68)
-            logger.info(f"Результат второго вызова API: {result}")
+            if not result:
+                logger.error("Первый вызов API вернул пустой результат")
+                await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
+                return
             
-            # Проверяем тип результата и его содержимое
-            if isinstance(result, dict):
-                logger.info(f"Ключи в результате: {result.keys()}")
-                if 'image' in result:
-                    image_path = result['image']
+            # Второй вызов API
+            try:
+                result = client.predict(fn_index=68)
+                logger.info(f"Результат второго вызова API: {result}")
+                
+                # Проверяем тип результата и его содержимое
+                if isinstance(result, (list, tuple)) and len(result) > 0:
+                    image_path = result[0]
                     logger.info(f"Путь к изображению: {image_path}")
                     # Отправляем изображение в чат
                     await update.message.reply_photo(image_path)
                     await status_message.delete()
                 else:
-                    logger.error(f"В результате нет ключа 'image'. Содержимое: {result}")
+                    logger.error(f"Неверный формат результата: {result}")
                     await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
-            else:
-                logger.error(f"Неверный тип результата: {type(result)}. Значение: {result}")
+            except Exception as e:
+                logger.error(f"Ошибка при втором вызове API: {str(e)}", exc_info=True)
                 await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
                 
     except Exception as e:
