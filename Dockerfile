@@ -1,17 +1,15 @@
-# Dockerfile для Telegram-бота и сервера
+FROM python:3.9-slim
 
-# Используем базовый образ для Python
-FROM python:3.9
-
-# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем зависимости и устанавливаем их
-COPY server/requirements.txt /app/server/requirements.txt
-RUN pip install -r server/requirements.txt
+# Копируем файлы зависимостей
+COPY requirements.txt .
 
-# Копируем код бота и сервера
-COPY server /app/server
+# Устанавливаем зависимости
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Команда запускает сервер и бота
-CMD ["sh", "-c", "python3 /app/server/server.py"]
+# Копируем остальные файлы проекта
+COPY . .
+
+# Запускаем бота
+CMD ["python", "bot.py"] 
