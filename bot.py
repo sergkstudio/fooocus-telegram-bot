@@ -23,6 +23,11 @@ FOOOCUS_API_URL = os.getenv('FOOOCUS_API_URL', 'http://localhost:7865')
 # Инициализация клиента Gradio
 client = Client(FOOOCUS_API_URL)
 
+# Выводим список доступных эндпоинтов при запуске
+logger.info("Доступные эндпоинты:")
+for endpoint in client.endpoints:
+    logger.info(f"- {endpoint}")
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start"""
     await update.message.reply_text(
@@ -43,7 +48,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Запускаем генерацию изображения через Gradio API
             result = client.predict(
                 prompt,
-                api_name="/generate_image"  # Имя эндпоинта из Fooocus API
+                api_name="/run"  # Используем основной эндпоинт Fooocus
             )
             
             if result and isinstance(result, str):
