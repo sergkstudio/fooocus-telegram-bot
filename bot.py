@@ -1,8 +1,9 @@
 import os
 import logging
+import requests
+import json
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-from gradio_client import Client
 from dotenv import load_dotenv
 import tempfile
 
@@ -18,20 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Конфигурация
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-FOOOCUS_API_URL = os.getenv('FOOOCUS_API_URL', 'http://localhost:7865')
-
-# Инициализация клиента Gradio
-client = Client(FOOOCUS_API_URL)
-
-# Выводим список доступных эндпоинтов при запуске
-logger.info("Доступные эндпоинты:")
-try:
-    # Получаем список всех доступных эндпоинтов
-    endpoints = client.endpoints
-    for endpoint_name in endpoints:
-        logger.info(f"- {endpoint_name}")
-except Exception as e:
-    logger.error(f"Ошибка при получении списка эндпоинтов: {str(e)}")
+FOOOCUS_API_URL = os.getenv('FOOOCUS_API_URL', 'http://localhost:8888')
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start"""
@@ -48,17 +36,29 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_message = await update.message.reply_text('Генерирую изображение...')
     
     try:
-        # Создаем временную директорию для сохранения изображения
-        with tempfile.TemporaryDirectory() as temp_dir:
-            # Запускаем генерацию изображения через Gradio API
-            result = client.predict(prompt, api_name="/run")
-            
-            if result and isinstance(result, str):
+        # Создаем параметры для запроса
+        params = {
+            "prompt": prompt,
+            "async_process": False  # Синхронный режим для простоты
+        }
+        
+        # Отправляем запрос к API
+        response = requests.post(
+            url=f"{FOOOCUS_API_URL}/v1/generation/text-to-image",
+            data=json.dumps(params),
+            headers={"Content-Type": "application/json"}
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            if "url" in result:
                 # Отправляем изображение в чат
-                await update.message.reply_photo(result)
+                await update.message.reply_photo(result["url"])
                 await status_message.delete()
             else:
                 await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
+        else:
+            await status_message.edit_text(f'Ошибка API: {response.status_code}')
                 
     except Exception as e:
         logger.error(f'Ошибка при генерации изображения: {str(e)}')
