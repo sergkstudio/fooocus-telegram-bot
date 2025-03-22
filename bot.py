@@ -25,13 +25,13 @@ client = Client(FOOOCUS_API_URL)
 
 # Выводим список доступных эндпоинтов при запуске
 logger.info("Доступные эндпоинты:")
-for endpoint in client.endpoints:
-    logger.info(f"- {endpoint}")
-    try:
-        fn = client.endpoints[endpoint]
-        logger.info(f"  Параметры: {fn.parameters}")
-    except Exception as e:
-        logger.error(f"Ошибка при получении информации об эндпоинте {endpoint}: {str(e)}")
+try:
+    # Получаем список всех доступных эндпоинтов
+    endpoints = client.endpoints
+    for endpoint_name in endpoints:
+        logger.info(f"- {endpoint_name}")
+except Exception as e:
+    logger.error(f"Ошибка при получении списка эндпоинтов: {str(e)}")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start"""
@@ -53,7 +53,8 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Запускаем генерацию изображения через Gradio API
             result = client.predict(
                 prompt,
-                api_name="/generate_image"  # Используем правильный эндпоинт Fooocus
+                api_name="/run",  # Используем основной эндпоинт
+                fn_index=0  # Указываем индекс функции для генерации изображения
             )
             
             if result and isinstance(result, str):
