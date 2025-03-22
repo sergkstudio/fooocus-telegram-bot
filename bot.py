@@ -27,6 +27,11 @@ client = Client(FOOOCUS_API_URL)
 logger.info("Доступные эндпоинты:")
 for endpoint in client.endpoints:
     logger.info(f"- {endpoint}")
+    try:
+        fn = client.endpoints[endpoint]
+        logger.info(f"  Параметры: {fn.parameters}")
+    except Exception as e:
+        logger.error(f"Ошибка при получении информации об эндпоинте {endpoint}: {str(e)}")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start"""
