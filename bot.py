@@ -50,8 +50,8 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Создаем временную директорию для сохранения изображения
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Запускаем генерацию изображения через Gradio API с минимальным набором параметров
-            result = client.predict(prompt, fn_index=0)
+            # Запускаем генерацию изображения через Gradio API
+            result = client.predict(prompt)
             
             if result and isinstance(result, str):
                 # Отправляем изображение в чат
