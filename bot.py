@@ -201,22 +201,6 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 0,  # inpaint respective field
                 -64,  # mask erode or dilate
                 False,  # invert mask
-                False,  # enable
-                "",  # detection prompt
-                "",  # enhancement positive prompt
-                "",  # enhancement negative prompt
-                "u2net",  # mask generation model
-                "full",  # cloth category
-                "vit_b",  # sam model
-                0,  # text threshold
-                0,  # box threshold
-                0,  # maximum number of detections
-                False,  # disable initial latent in inpaint
-                "None",  # inpaint engine
-                0,  # inpaint denoising strength
-                0,  # inpaint respective field
-                -64,  # mask erode or dilate
-                False,  # invert mask
                 fn_index=67  # индекс функции для генерации изображения
             )
             
