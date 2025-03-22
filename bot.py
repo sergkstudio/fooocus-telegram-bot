@@ -90,10 +90,14 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 # Enhance #3
                 False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
                 "v2.6", 1, 0.618, 0, False,
-                api_name="/generate"
+                fn_index=67
             )
             
-            logger.info(f"Результат вызова API: {result}")
+            logger.info(f"Результат первого вызова API: {result}")
+
+            # Второй вызов API для получения изображения
+            result = client.predict(fn_index=68)
+            logger.info(f"Результат второго вызова API: {result}")
             
             # Проверяем тип результата
             if isinstance(result, dict):
