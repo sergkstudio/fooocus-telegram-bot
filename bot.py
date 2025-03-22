@@ -217,7 +217,8 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				0,		# [-64, 64] in 'Mask Erode or Dilate'
 				False,	# 'Invert Mask' Checkbox
 				fn_index=67
-)
+            )
+            result = client.predict(fn_index=68)
             
             logger.info(f"Результат первого вызова API: {result}")
             
