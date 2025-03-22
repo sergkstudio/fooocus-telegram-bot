@@ -41,7 +41,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Создаем временную директорию для сохранения изображения
         with tempfile.TemporaryDirectory() as temp_dir:
             # Первый вызов API для генерации изображения
-            result = client.predict_api(
+            result = client.predict(
                 False,  # Generate Image Grid for Each Batch
                 prompt,  # Prompt
                 "!",  # Negative Prompt
@@ -96,26 +96,48 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logger.info(f"Результат первого вызова API: {result}")
             
             # Второй вызов API для получения изображения
-            result = client.predict_api(fn_index=68)
+            result = client.predict(fn_index=68)
             logger.info(f"Результат второго вызова API: {result}")
+            logger.info(f"Тип результата: {type(result)}")
             
-            # Проверяем тип результата и его содержимое
-            if isinstance(result, dict):
-                if 'data' in result and len(result['data']) > 0:
-                    image_data = result['data'][0]
-                    # Сохраняем изображение во временный файл
-                    image_path = os.path.join(temp_dir, "generated_image.png")
-                    with open(image_path, "wb") as f:
-                        f.write(image_data)
-                    logger.info(f"Изображение сохранено в: {image_path}")
-                    # Отправляем изображение в чат
-                    await update.message.reply_photo(image_path)
-                    await status_message.delete()
+            # Пробуем разные способы получения изображения
+            image_path = None
+            
+            # Способ 1: Проверяем, является ли результат строкой
+            if isinstance(result, str):
+                image_path = result
+                logger.info(f"Результат - строка: {image_path}")
+            
+            # Способ 2: Проверяем, является ли результат словарем
+            elif isinstance(result, dict):
+                if 'image' in result:
+                    image_path = result['image']
+                    logger.info(f"Результат - словарь с ключом 'image': {image_path}")
                 else:
-                    logger.error(f"В результате нет данных изображения: {result}")
-                    await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
+                    logger.info(f"Содержимое словаря: {result}")
+            
+            # Способ 3: Проверяем, является ли результат списком или кортежем
+            elif isinstance(result, (list, tuple)):
+                if len(result) > 0:
+                    image_path = result[0]
+                    logger.info(f"Результат - список/кортеж: {image_path}")
+                else:
+                    logger.info("Результат - пустой список/кортеж")
+            
+            # Способ 4: Пробуем получить изображение напрямую из API
+            try:
+                direct_result = client.predict(fn_index=67, api_name="/generate")
+                logger.info(f"Прямой результат API: {direct_result}")
+            except Exception as e:
+                logger.error(f"Ошибка при прямом вызове API: {str(e)}")
+            
+            # Если нашли путь к изображению, отправляем его
+            if image_path:
+                logger.info(f"Отправляем изображение: {image_path}")
+                await update.message.reply_photo(image_path)
+                await status_message.delete()
             else:
-                logger.error(f"Неверный формат результата: {result}")
+                logger.error(f"Не удалось получить путь к изображению из результата: {result}")
                 await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
                 
     except Exception as e:
