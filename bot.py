@@ -41,7 +41,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Создаем временную директорию для сохранения изображения
         with tempfile.TemporaryDirectory() as temp_dir:
             # Первый вызов API для генерации изображения
-            result = client.predict(
+            result = client.predict_api(
                 False,  # Generate Image Grid for Each Batch
                 prompt,  # Prompt
                 "!",  # Negative Prompt
@@ -96,26 +96,24 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logger.info(f"Результат первого вызова API: {result}")
             
             # Второй вызов API для получения изображения
-            result = client.predict(fn_index=68)
+            result = client.predict_api(fn_index=68)
             logger.info(f"Результат второго вызова API: {result}")
             
             # Проверяем тип результата и его содержимое
             if isinstance(result, dict):
-                if 'image' in result:
-                    image_path = result['image']
-                    logger.info(f"Путь к изображению: {image_path}")
+                if 'data' in result and len(result['data']) > 0:
+                    image_data = result['data'][0]
+                    # Сохраняем изображение во временный файл
+                    image_path = os.path.join(temp_dir, "generated_image.png")
+                    with open(image_path, "wb") as f:
+                        f.write(image_data)
+                    logger.info(f"Изображение сохранено в: {image_path}")
                     # Отправляем изображение в чат
                     await update.message.reply_photo(image_path)
                     await status_message.delete()
                 else:
-                    logger.error(f"В результате нет ключа 'image': {result}")
+                    logger.error(f"В результате нет данных изображения: {result}")
                     await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
-            elif isinstance(result, (list, tuple)) and len(result) > 0:
-                image_path = result[0]
-                logger.info(f"Путь к изображению: {image_path}")
-                # Отправляем изображение в чат
-                await update.message.reply_photo(image_path)
-                await status_message.delete()
             else:
                 logger.error(f"Неверный формат результата: {result}")
                 await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
