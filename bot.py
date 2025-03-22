@@ -93,21 +93,30 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 fn_index=67
             )
             
+            logger.info(f"Результат первого вызова API: {result}")
+            
             # Второй вызов API
             result = client.predict(fn_index=68)
+            logger.info(f"Результат второго вызова API: {result}")
             
-            # Проверяем, что результат - это словарь и содержит путь к изображению
-            if isinstance(result, dict) and 'image' in result:
-                image_path = result['image']
-                # Отправляем изображение в чат
-                await update.message.reply_photo(image_path)
-                await status_message.delete()
+            # Проверяем тип результата и его содержимое
+            if isinstance(result, dict):
+                logger.info(f"Ключи в результате: {result.keys()}")
+                if 'image' in result:
+                    image_path = result['image']
+                    logger.info(f"Путь к изображению: {image_path}")
+                    # Отправляем изображение в чат
+                    await update.message.reply_photo(image_path)
+                    await status_message.delete()
+                else:
+                    logger.error(f"В результате нет ключа 'image'. Содержимое: {result}")
+                    await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
             else:
-                logger.error(f"Неверный формат ответа от API: {result}")
+                logger.error(f"Неверный тип результата: {type(result)}. Значение: {result}")
                 await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
                 
     except Exception as e:
-        logger.error(f'Ошибка при генерации изображения: {str(e)}')
+        logger.error(f'Ошибка при генерации изображения: {str(e)}', exc_info=True)
         await status_message.edit_text('Произошла ошибка при генерации изображения')
 
 def main():
