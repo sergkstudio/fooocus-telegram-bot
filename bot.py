@@ -63,7 +63,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "None",  # current_tab
                 "None",  # save_metadata_to_images
                 "None",  # metadata_scheme
-                api_name="/run"
+                api_name="/generate"
             )
             
             if result and isinstance(result, str):
