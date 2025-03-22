@@ -12,7 +12,7 @@ load_dotenv()
 # Настройка логирования
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG
+    level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
@@ -40,8 +40,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Создаем временную директорию для сохранения изображения
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Запускаем генерацию изображения через Gradio API с полным набором параметров
-            logger.debug(f"Отправка запроса в API Fooocus. Промпт: {prompt}")
+            # Первый вызов API для генерации изображения
             result = client.predict(
                 False,  # Generate Image Grid for Each Batch
                 prompt,  # Prompt
@@ -94,18 +93,18 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 fn_index=67
             )
             
-            logger.debug(f"Ответ от API Fooocus: {result}")
+            # Второй вызов API
+            result = client.predict(fn_index=68)
             
             if result and isinstance(result, str):
                 # Отправляем изображение в чат
                 await update.message.reply_photo(result)
                 await status_message.delete()
             else:
-                logger.error(f"Неверный формат ответа от API: {result}")
                 await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
                 
     except Exception as e:
-        logger.error(f'Ошибка при вызове API Fooocus: {str(e)}', exc_info=True)
+        logger.error(f'Ошибка при генерации изображения: {str(e)}')
         await status_message.edit_text('Произошла ошибка при генерации изображения')
 
 def main():
