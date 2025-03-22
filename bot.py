@@ -100,7 +100,17 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logger.info(f"Результат второго вызова API: {result}")
             
             # Проверяем тип результата и его содержимое
-            if isinstance(result, (list, tuple)) and len(result) > 0:
+            if isinstance(result, dict):
+                if 'image' in result:
+                    image_path = result['image']
+                    logger.info(f"Путь к изображению: {image_path}")
+                    # Отправляем изображение в чат
+                    await update.message.reply_photo(image_path)
+                    await status_message.delete()
+                else:
+                    logger.error(f"В результате нет ключа 'image': {result}")
+                    await status_message.edit_text('Ошибка: не удалось сгенерировать изображение')
+            elif isinstance(result, (list, tuple)) and len(result) > 0:
                 image_path = result[0]
                 logger.info(f"Путь к изображению: {image_path}")
                 # Отправляем изображение в чат
