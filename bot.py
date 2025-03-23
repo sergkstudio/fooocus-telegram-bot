@@ -23,7 +23,7 @@ client = Client(GRADIO_URL)
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start"""
     await update.message.reply_text(
-        'Привет! Я бот для генерации изображений через Fooocus. '
+        'Привет Я бот для генерации изображений через Fooocus. '
         'Отправь мне промпт, и я сгенерирую изображение.'
     )
 
@@ -52,7 +52,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				"704×1408",	# str # in 'Aspect Ratios' Radio component
 				1,	# int | float (numeric value between 1 and 32)
 				"png",	# str # in 'Output Format' Radio component
-				"!",	# str # in 'Seed' Textbox component
+				"",	# str # in 'Seed' Textbox component
 				True,	# bool # in 'Read wildcards in order' Checkbox component
 				0,	# int | float (numeric value between 0.0 and 30.0)
 				1,	# int | float (numeric value between 1.0 and 30.0)
@@ -75,12 +75,12 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				"None",	# str (Option from: ['None', 'sd_xl_offset_example-lora_1.0.safetensors'])
 				-2,	# int | float (numeric value between -2 and 2)
 				True,	# bool # in 'Input Image' Checkbox component
-				"!",	# str # in 'parameter_212' Textbox component
+				"",	# str # in 'parameter_212' Textbox component
 				"Disabled",	# str # in 'Upscale or Variation:' Radio component
 				"https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",	# str (filepath or URL to image)
 				["Left"],	# List[str] # in 'Outpaint Direction' Checkboxgroup component
 				"https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",	# str (filepath or URL to image)
-				"!",	# str # in 'Inpaint Additional Prompt' Textbox component
+				"",	# str # in 'Inpaint Additional Prompt' Textbox component
 				"https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",	# str (filepath or URL to image)
 				True,	# bool # in 'Disable Preview' Checkbox component
 				True,	# bool # in 'Disable Intermediate Results' Checkbox component
@@ -160,9 +160,9 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				"Before First Enhancement",	# str # in 'Order of Processing' Radio component
 				"Original Prompts",	# str # in 'Prompt' Radio component
 				True,	# bool # in 'Enable' Checkbox component
-				"!",	# str # in 'Detection prompt' Textbox component
-				"!",	# str # in 'Enhancement positive prompt' Textbox component
-				"!",	# str # in 'Enhancement negative prompt' Textbox component
+				"",	# str # in 'Detection prompt' Textbox component
+				"",	# str # in 'Enhancement positive prompt' Textbox component
+				"",	# str # in 'Enhancement negative prompt' Textbox component
 				"u2net",	# str (Option from: ['u2net', 'u2netp', 'u2net_human_seg', 'u2net_cloth_seg', 'silueta', 'isnet-general-use', 'isnet-anime', 'sam'])
 								# in 'Mask generation model' Dropdown component
 				"full",	# str (Option from: ['full', 'upper', 'lower'])
@@ -186,9 +186,9 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 								# in 'Mask Erode or Dilate' Slider component
 				True,	# bool # in 'Invert Mask' Checkbox component
 				True,	# bool # in 'Enable' Checkbox component
-				"!",	# str # in 'Detection prompt' Textbox component
-				"!",	# str # in 'Enhancement positive prompt' Textbox component
-				"!",	# str # in 'Enhancement negative prompt' Textbox component
+				"",	# str # in 'Detection prompt' Textbox component
+				"",	# str # in 'Enhancement positive prompt' Textbox component
+				"",	# str # in 'Enhancement negative prompt' Textbox component
 				"u2net",	# str (Option from: ['u2net', 'u2netp', 'u2net_human_seg', 'u2net_cloth_seg', 'silueta', 'isnet-general-use', 'isnet-anime', 'sam'])
 								# in 'Mask generation model' Dropdown component
 				"full",	# str (Option from: ['full', 'upper', 'lower'])
@@ -212,9 +212,9 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 								# in 'Mask Erode or Dilate' Slider component
 				True,	# bool # in 'Invert Mask' Checkbox component
 				True,	# bool # in 'Enable' Checkbox component
-				"!",	# str # in 'Detection prompt' Textbox component
-				"!",	# str # in 'Enhancement positive prompt' Textbox component
-				"!",	# str # in 'Enhancement negative prompt' Textbox component
+				"",	# str # in 'Detection prompt' Textbox component
+				"",	# str # in 'Enhancement positive prompt' Textbox component
+				"",	# str # in 'Enhancement negative prompt' Textbox component
 				"u2net",	# str (Option from: ['u2net', 'u2netp', 'u2net_human_seg', 'u2net_cloth_seg', 'silueta', 'isnet-general-use', 'isnet-anime', 'sam'])
 								# in 'Mask generation model' Dropdown component
 				"full",	# str (Option from: ['full', 'upper', 'lower'])
