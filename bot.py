@@ -12,7 +12,7 @@ logging.basicConfig(
 )
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-API_URL = os.getenv('FOOOCUS_API_URL', 'http://localhost:7860')
+API_URL = os.getenv('FOOOCUS_API_URL')
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🎨 Отправьте текстовый запрос для генерации изображения")
@@ -34,7 +34,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             prompt,              # Основной промпт
             "",                  # Негативный промпт
             ["Fooocus V2"],      # Стили
-            "Quality",           # Производительность
+            "Speed",           # Производительность
             "704×1408",         # Соотношение сторон
             1,                   # Количество изображений
             "png",               # Формат вывода
