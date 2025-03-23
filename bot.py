@@ -93,13 +93,13 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				True,	# bool # in 'Input Image' Checkbox component
 				"Howdy!",	# str # in 'parameter_212' Textbox component
 				"Disabled",	# str # in 'Upscale or Variation:' Radio component
-				"https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",	# str (filepath or URL to image)
+				"",	# str (filepath or URL to image)
 								# in 'Image' Image component
 				["Left"],	# List[str] # in 'Outpaint Direction' Checkboxgroup component
-				"https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",	# str (filepath or URL to image)
+				"",	# str (filepath or URL to image)
 								# in 'Image' Image component
 				"Howdy!",	# str # in 'Inpaint Additional Prompt' Textbox component
-				"https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",	# str (filepath or URL to image)
+				"",	# str (filepath or URL to image)
 								# in 'Mask Upload' Image component
 				True,	# bool # in 'Disable Preview' Checkbox component
 				True,	# bool # in 'Disable Intermediate Results' Checkbox component
@@ -169,28 +169,28 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				True,	# bool # in 'Save only final enhanced image' Checkbox component
 				True,	# bool # in 'Save Metadata to Images' Checkbox component
 				"fooocus",	# str # in 'Metadata Scheme' Radio component
-				"https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",	# str (filepath or URL to image)
+				"",	# str (filepath or URL to image)
 								# in 'Image' Image component
 				0,	# int | float (numeric value between 0.0 and 1.0)
 								# in 'Stop At' Slider component
 				0,	# int | float (numeric value between 0.0 and 2.0)
 								# in 'Weight' Slider component
 				"ImagePrompt",	# str # in 'Type' Radio component
-				"https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",	# str (filepath or URL to image)
+				"",	# str (filepath or URL to image)
 								# in 'Image' Image component
 				0,	# int | float (numeric value between 0.0 and 1.0)
 								# in 'Stop At' Slider component
 				0,	# int | float (numeric value between 0.0 and 2.0)
 								# in 'Weight' Slider component
 				"ImagePrompt",	# str # in 'Type' Radio component
-				"https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",	# str (filepath or URL to image)
+				"",	# str (filepath or URL to image)
 								# in 'Image' Image component
 				0,	# int | float (numeric value between 0.0 and 1.0)
 								# in 'Stop At' Slider component
 				0,	# int | float (numeric value between 0.0 and 2.0)
 								# in 'Weight' Slider component
 				"ImagePrompt",	# str # in 'Type' Radio component
-				"https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",	# str (filepath or URL to image)
+				"",	# str (filepath or URL to image)
 								# in 'Image' Image component
 				0,	# int | float (numeric value between 0.0 and 1.0)
 								# in 'Stop At' Slider component
@@ -201,7 +201,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				-64,	# int | float (numeric value between -64 and 64)
 								# in 'GroundingDINO Box Erode or Dilate' Slider component
 				True,	# bool # in 'Debug Enhance Masks' Checkbox component
-				"https://raw.githubusercontent.com/gradio-app/gradio/main/test/test_files/bus.png",	# str (filepath or URL to image)
+				"",	# str (filepath or URL to image)
 								# in 'Use with Enhance, skips image generation' Image component
 				True,	# bool # in 'Enhance' Checkbox component
 				"Disabled",	# str # in 'Upscale or Variation:' Radio component
