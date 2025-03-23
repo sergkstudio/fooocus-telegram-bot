@@ -40,159 +40,181 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         # Запускаем генерацию (fn_index=67)
         job = client.predict(
-            True,  # Generate Image Grid
-            prompt,  # Positive prompt
-            "",  # Negative prompt
-            ["Fooocus V2"],  # Style
-            "Quality",  # Performance
-            "704×1408",  # Aspect ratio
-            1,  # Number of images
-            "png",  # Output format
-            seed,  # Seed
-            True,  # Read wildcards
-            0,  # Sharpness
-            1,  # Guidance scale
-            "juggernautXL_v8Rundiffusion.safetensors",  # Base model
-            "None",  # Refiner
-            0.1,  # Refiner switch at
-            True,  # Enable refiner
-            "None",  # LoRA 1
-            -2,  # LoRA 1 weight
-            True,  # Enable LoRA 2
-            "None",  # LoRA 2
-            -2,  # LoRA 2 weight
-            True,  # Enable LoRA 3
-            "None",  # LoRA 3
-            -2,  # LoRA 3 weight
-            True,  # Enable LoRA 4
-            "None",  # LoRA 4
-            -2,  # LoRA 4 weight
-            True,  # Enable LoRA 5
-            "None",  # LoRA 5
-            -2,  # LoRA 5 weight
-            False,  # Input image
-            "",  # Input image prompt
-            "Disabled",  # Upscale or variation
-            None,  # Image
-            ["Left"],  # Outpaint direction
-            None,  # Image
-            "",  # Inpaint additional prompt
-            None,  # Mask
-            True,  # Disable preview
-            True,  # Disable intermediate results
-            True,  # Disable seed increment
-            True,  # Black out NSFW
-            0.1,  # Positive ADM guidance
-            0.1,  # Negative ADM guidance
-            0,  # ADM guidance end at step
-            1,  # CFG mimicking
-            1,  # CLIP skip
-            "euler",  # Sampler
-            "normal",  # Scheduler
-            "Default (model)",  # VAE
-            -1,  # Forced sampling steps
-            -1,  # Forced refiner switch step
-            -1,  # Forced width
-            -1,  # Forced height
-            -1,  # Forced vary strength
-            -1,  # Forced upscale strength
-            True,  # Mixing image prompt and vary/upscale
-            True,  # Mixing image prompt and inpaint
-            True,  # Debug preprocessors
-            True,  # Skip preprocessors
-            1,  # Canny low threshold
-            1,  # Canny high threshold
-            "joint",  # Refiner swap method
-            0,  # ControlNet softness
-            True,  # Enable advanced features
-            0,  # B1
-            0,  # B2
-            0,  # S1
-            0,  # S2
-            True,  # Debug inpaint preprocessing
-            True,  # Disable initial latent
-            "None",  # Inpaint engine
-            0,  # Inpaint denoising strength
-            0,  # Inpaint respective field
-            True,  # Enable advanced masking
-            True,  # Invert mask
-            -64,  # Mask erode/dilate
-            True,  # Save only final
-            True,  # Save metadata
-            "fooocus",  # Metadata scheme
-            None,  # Image
-            0,  # Stop at
-            0,  # Weight
-            "ImagePrompt",  # Type
-            None,  # Image
-            0,  # Stop at
-            0,  # Weight
-            "ImagePrompt",  # Type
-            None,  # Image
-            0,  # Stop at
-            0,  # Weight
-            "ImagePrompt",  # Type
-            None,  # Image
-            0,  # Stop at
-            0,  # Weight
-            "ImagePrompt",  # Type
-            True,  # Debug GroundingDINO
-            -64,  # GroundingDINO box erode/dilate
-            True,  # Debug enhance masks
-            None,  # Use with enhance
-            True,  # Enhance
-            "Disabled",  # Upscale or variation
-            "Before First Enhancement",  # Order of processing
-            "Original Prompts",  # Prompt
-            True,  # Enable
-            "",  # Detection prompt
-            "",  # Enhancement positive prompt
-            "",  # Enhancement negative prompt
-            "u2net",  # Mask generation model
-            "full",  # Cloth category
-            "vit_b",  # SAM model
-            0,  # Text threshold
-            0,  # Box threshold
-            0,  # Max detections
-            True,  # Disable initial latent
-            "None",  # Inpaint engine
-            0,  # Inpaint denoising strength
-            0,  # Inpaint respective field
-            -64,  # Mask erode/dilate
-            True,  # Invert mask
-            True,  # Enable
-            "",  # Detection prompt
-            "",  # Enhancement positive prompt
-            "",  # Enhancement negative prompt
-            "u2net",  # Mask generation model
-            "full",  # Cloth category
-            "vit_b",  # SAM model
-            0,  # Text threshold
-            0,  # Box threshold
-            0,  # Max detections
-            True,  # Disable initial latent
-            "None",  # Inpaint engine
-            0,  # Inpaint denoising strength
-            0,  # Inpaint respective field
-            -64,  # Mask erode/dilate
-            True,  # Invert mask
-            True,  # Enable
-            "",  # Detection prompt
-            "",  # Enhancement positive prompt
-            "",  # Enhancement negative prompt
-            "u2net",  # Mask generation model
-            "full",  # Cloth category
-            "vit_b",  # SAM model
-            0,  # Text threshold
-            0,  # Box threshold
-            0,  # Max detections
-            True,  # Disable initial latent
-            "None",  # Inpaint engine
-            0,  # Inpaint denoising strength
-            0,  # Inpaint respective field
-            -64,  # Mask erode/dilate
-            True,  # Invert mask
-            fn_index=67
+				False,			# 'Generate Image Grid for Each Batch'
+				"a girl sitting in chair",	# str in 'Prompt' Textbox
+				"!",			# 'Negative Prompt' Textbox 
+				["Fooocus V2"],	# List[str] in 'Selected Styles' Checkboxgroup
+				"Quality",		# str in 'Performance' Radio
+				"1280×768",	   # str in 'Aspect Ratios' Radio
+				1,				# [1, 32] in 'Image Number' Slider
+				"png",			# 'Output Format' Radio
+				"0",			# 'Seed' Textbox
+				False,			# 'Read wildcards in order' Checkbox
+				2,				# [0.0, 30.0] in 'Image Sharpness' Slider
+				7,				# [1.0, 30.0] in 'Guidance Scale' Slider
+				"animaPencilXL_v500.safetensors",	# 'Base Model (SDXL only)' Dropdown
+				"None",			# 'Refiner (SDXL or SD 1.5)' Dropdown
+				0.5,			# [0.1, 1.0] in 'Refiner Switch At' Slider
+                ################################################################
+                # LoRA
+				True,	# 'LoRA 1 Enable'
+				"None",	# 'LoRA 1' Dropdown
+				-2,		# [-2, 2] in 'LoRA 1 Weight'
+				True,	# 'LoRA 2 Enable'
+				"None",	# 'LoRA 2' Dropdown
+				-2,		# [-2, 2] in 'LoRA 2 Weight'
+				True,	# 'LoRA 3 Enable'
+				"None",	# 'LoRA 3' Dropdown 
+				-2,		# [-2, 2] in 'LoRA 3 Weight'
+				True,	# 'LoRA 4 Enable'
+				"None",	# 'LoRA 4' Dropdown
+				-2,		# [-2, 2] in 'LoRA 4 Weight'
+				True,	# 'LoRA 5 Enable'
+				"None",	# 'LoRA 5' Dropdown component
+				-2,		# [-2, 2] in 'LoRA 5 Weight'
+                ################################################################
+                # Input Image
+				False,		# bool in 'Input Image' Checkbox
+				"",			# str in 'parameter_212' Textbox
+				"Disabled",	# 'Upscale or Variation:'
+				"", 		# 'Upscale or Variation' Image
+				["Left"],	# 'Outpaint Direction'
+				"",			# Inpaint or Outpaint 'Image'
+				"",			# 'Inpaint Additional Prompt'
+				"",			# Inpaint or Outpaint 'Mask Upload' Image
+                ################################################################
+                # Developer Debug Mode
+				True,	# 'Disable Preview'
+				True,	# 'Disable Intermediate Results'
+				True,	# 'Disable seed increment'
+				False,	# 'Black Out NSFW'
+				1.5,	# [0.1, 3.0] in 'Positive ADM Guidance Scaler'
+				0.8,	# [0.1, 3.0] in 'Negative ADM Guidance Scaler'
+				0.3,	# [0.0, 1.0] in 'ADM Guidance End At Step'
+				7,		# [1.0, 30.0] in 'CFG Mimicking from TSNR'
+				2,		# [1, 12] in 'CLIP Skip'
+				"dpmpp_2m_sde_gpu",	# 'Sampler'
+				"karras",	# 'Scheduler'
+				"Default (model)",	# 'VAE'
+				-1,		# [-1, 200] in 'Forced Overwrite of Sampling Step'
+				-1,		# [-1, 200] in 'Forced Overwrite of Refiner Switch Step'
+				-1,		# [-1, 2048] in 'Forced Overwrite of Generating Width'
+				-1,		# [-1, 2048] in 'Forced Overwrite of Generating Height'
+				-1,		# [-1, 1.0] in 'Forced Overwrite of Denoising Strength of "Vary"'
+				-1,		# [-1, 1.0] in 'Forced Overwrite of Denoising Strength of "Upscale"'
+				False,	# 'Mixing Image Prompt and Vary/Upscale'
+				False,	# 'Mixing Image Prompt and Inpaint'
+				False,	# 'Debug Preprocessors'
+				False,	# 'Skip Preprocessors'
+				64,		# [1, 255] in 'Canny Low Threshold'
+				128,	# [1, 255] in 'Canny High Threshold'
+				"joint",# 'Refiner swap method'
+				0.25,	# [0.0, 1.0] in 'Softness of ControlNet'
+				False,	# 'FreeU Enabled'
+				1.01,	# [0, 2] in 'FreeU B1'
+				1.02,	# [0, 2] in 'FreeU B2'
+				0.99,	# [0, 4] in 'FreeU S1'
+				0.95,	# [0, 4] in 'FreeU S2'
+				False,	# 'Debug Inpaint Preprocessing'
+				False,	# 'Disable initial latent in inpaint'
+				"v2.6",	# 'Inpaint Engine'
+				1,		# [0.0, 1.0] in 'Inpaint Denoising Strength'
+				0.618,	# [0.0, 1.0] in 'Inpaint Respective Field'
+                ################################################################
+                # MISC
+				False,	# 'Input Image: Inpaint or Outpaint: Enable Advanced Masking Features'
+				False,	# 'Input Image: Inpaint or Outpaint: Invert Mask When Generating'
+				0,		# [-64, 64] in 'Mask Erode or Dilate'
+				False,	# 'Developer Debug Mode: Save only final enhanced image'
+				False,	# 'Developer Debug Mode: Save Metadata to Images'
+				"fooocus",	# str in 'Metadata Scheme' Radio
+                ################################################################
+                # Image
+                # Image Prompt Image 1
+				"",	# Image
+				0,	# [0, 1.0] in 'Stop At'
+				0,	# [0, 2.0] in 'Weight'
+				"ImagePrompt",	# 'Type' Radio
+                # Image Prompt Image 2
+				"",	# 'Image 2' Image
+				0,	# [0, 1.0] in 'Stop At'
+				0,	# [0, 2.0] in 'Weight'
+				"ImagePrompt",	# 'Type' Radio
+                # Image Prompt Image 3
+				"",	# 'Image 3' Image
+				0,	# [0, 1.0] in 'Stop At'
+				0,	# [0, 2.0] in 'Weight'
+				"ImagePrompt",	# 'Type' Radio
+                # Image Prompt Image 4
+				"",	# 'Image 4' Image
+				0,	# [0, 1.0] in 'Stop At'
+				0,	# [0, 2.0] in 'Weight'
+				"ImagePrompt",	# 'Type' Radio
+				False,	# 'Developer Debug Mode: Debug GroundingDINO'
+				0,		# [-64, 64] in 'Developer Debug Mode: GroundingDINO Box Erode or Dilate'
+				False,	# 'Developer Debug Mode: Debug Enhance Masks'
+				"",		# 'Input Image/Enhance: Use with Enhance, skips image generation' Image
+                ################################################################
+                # Enhance
+				False,	# 'Enhance' Checkbox
+				"Disabled",	# 'Input Image: Upscale or Variation:' Radio
+				"Before First Enhancement",	# 'Enhance: Order of Processing'
+				"Original Prompts",	# 'Enhance: Prompt' Radio
+                # Enhance #1
+				False,	# 'Enable' Checkbox
+				"",		# 'Detection prompt' Textbox
+				"",		# 'Enhancement positive prompt' Textbox
+				"",		# 'Enhancement negative prompt' Textbox
+				"sam",	# 'Mask generation model'
+				"full",	# 'u2net_cloth: Cloth category' Dropdown
+				"vit_b",# 'SAM model' Dropdown
+				0.25,	# [0, 1.0] in 'Text Threshold'
+				0.3,	# [0, 1.0] in 'Box Threshold' Slider
+				0,		# [0, 10] in 'Maximum number of detections'
+				True,	# bool in 'Disable initial latent in inpaint'
+                # Enhance/Inpaint
+				"v2.6",	# 'Inpaint Engine'
+				1,		# [0, 1.0] in 'Inpaint Denoising Strength'
+				0.618,	# [0, 1.0] in 'Inpaint Respective Field'
+				0,		# [-64, 64] in 'Mask Erode or Dilate'
+				False,	# 'Invert Mask' Checkbox
+                # Enhance #2
+				False,	# 'Enable' Checkbox
+				"",		# 'Detection prompt' Textbox
+				"",		# 'Enhancement positive prompt' Textbox
+				"",		# 'Enhancement negative prompt' Textbox
+				"sam",	# 'Mask generation model'
+				"full",	# 'u2net_cloth: Cloth category' Dropdown
+				"vit_b",# 'SAM model' Dropdown
+				0.25,	# [0, 1.0] in 'Text Threshold'
+				0.3,	# [0, 1.0] in 'Box Threshold' Slider
+				0,		# [0, 10] in 'Maximum number of detections'
+				True,	# bool in 'Disable initial latent in inpaint'
+                # Enhance/Inpaint
+				"v2.6",	# 'Inpaint Engine'
+				1,		# [0, 1.0] in 'Inpaint Denoising Strength'
+				0.618,	# [0, 1.0] in 'Inpaint Respective Field'
+				0,		# [-64, 64] in 'Mask Erode or Dilate'
+				False,	# 'Invert Mask' Checkbox
+                # Enhance #3
+				False,	# 'Enable' Checkbox
+				"",		# 'Detection prompt' Textbox
+				"",		# 'Enhancement positive prompt' Textbox
+				"",		# 'Enhancement negative prompt' Textbox
+				"sam",	# 'Mask generation model'
+				"full",	# 'u2net_cloth: Cloth category' Dropdown
+				"vit_b",# 'SAM model' Dropdown
+				0.25,	# [0, 1.0] in 'Text Threshold'
+				0.3,	# [0, 1.0] in 'Box Threshold' Slider
+				0,		# [0, 10] in 'Maximum number of detections'
+				True,	# bool in 'Disable initial latent in inpaint'
+                # Enhance/Inpaint
+				"v2.6",	# 'Inpaint Engine'
+				1,		# [0, 1.0] in 'Inpaint Denoising Strength'
+				0.618,	# [0, 1.0] in 'Inpaint Respective Field'
+				0,		# [-64, 64] in 'Mask Erode or Dilate'
+				False,	# 'Invert Mask' Checkbox
+				fn_index=67
         )
 
         # Получаем результат (fn_index=68)
