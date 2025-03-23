@@ -197,39 +197,29 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fn_index=67
         )
 
-        # Получаем результат (fn_index=68)
+        # Получаем результат
         result = client.predict(fn_index=68)
         logger.info(f"Fooocus API result: {result}")
         
-        # Очищаем кэш (fn_index=69-72)
+        # Очистка кэша
         for i in range(69, 73):
             client.predict(fn_index=i)
         
-        if result and isinstance(result, (list, tuple)) and len(result) >= 4:
-            # Получаем путь к изображению из компонента 'Preview' (индекс 1)
-            image_path = result[1]
-            if isinstance(image_path, str):
-                try:
-                    # Получаем изображение через client.predict
-                    image_data = client.predict(image_path, fn_index=68)
-                    if image_data:
-                        await update.message.reply_photo(photo=image_data)
-                    else:
-                        logger.error("Failed to get image data")
-                        await update.message.reply_text('Не удалось получить данные изображения.')
-                except Exception as e:
-                    logger.error(f"Error sending photo: {e}")
-                    await update.message.reply_text('Не удалось отправить сгенерированное изображение.')
-            else:
-                logger.error(f"Invalid image path type: {type(image_path)}")
-                await update.message.reply_text('Не удалось сгенерировать изображение: неверный тип пути к файлу.')
-        else:
-            logger.error(f"Invalid result format: {result}")
-            await update.message.reply_text('Не удалось сгенерировать изображение: неверный формат результата.')
+        # Извлечение URL изображения
+        if isinstance(result, dict) and 'outputs' in result:
+            image_path = result['outputs'][0]  # Пример для структуры ответа
+            image_url = urljoin(GRADIO_URL, image_path)
             
+            # Скачивание изображения
+            response = requests.get(image_url)
+            if response.status_code == 200:
+                await update.message.reply_photo(photo=response.content)
+            else:
+                await update.message.reply_text('Ошибка загрузки изображения')
+        
     except Exception as e:
-        logger.error(f"Error generating image: {e}")
-        await update.message.reply_text('Произошла ошибка при генерации изображения.')
+        logger.error(f"Error: {e}")
+        await update.message.reply_text('Ошибка генерации')
     finally:
         await status_message.delete()
 
