@@ -75,7 +75,45 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Запуск генерации
         client.predict(
-            # ... все параметры генерации ...
+            False,  # Generate Image Grid for Each Batch
+            prompt,
+            "!",  # Negative Prompt
+            ["Fooocus V2"],  # Selected Styles
+            "Quality",  # Performance
+            "1280×768",  # Aspect Ratios
+            1,  # Image Number
+            "png",  # Output Format
+            "0",  # Seed
+            False,  # Read wildcards in order
+            2,  # Image Sharpness
+            7,  # Guidance Scale
+            "juggernautXL_v8Rundiffusion.safetensors",  # Base Model
+            "None",  # Refiner
+            0.5,  # Refiner Switch At
+            True, "None", -2,  # LoRA 1
+            True, "None", -2,  # LoRA 2
+            True, "None", -2,  # LoRA 3
+            True, "None", -2,  # LoRA 4
+            True, "None", -2,  # LoRA 5
+            False, "", "Disabled", "", ["Left"], "", "", "",
+            True, True, True, False, 1.5, 0.8, 0.3, 7, 2,
+            "dpmpp_2m_sde_gpu", "karras", "Default (model)",
+            -1, -1, -1, -1, -1, -1, False, False, False, False,
+            64, 128, "joint", 0.25, False, 1.01, 1.02, 0.99, 0.95,
+            False, False, "v2.6", 1, 0.618,
+            False, False, 0, False, False, "fooocus",
+            "", 0, 0, "ImagePrompt",
+            "", 0, 0, "ImagePrompt",
+            "", 0, 0, "ImagePrompt",
+            "", 0, 0, "ImagePrompt",
+            False, 0, False, "",
+            False, "Disabled", "Before First Enhancement", "Original Prompts",
+            False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
+            "v2.6", 1, 0.618, 0, False,
+            False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
+            "v2.6", 1, 0.618, 0, False,
+            False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
+            "v2.6", 1, 0.618, 0, False,
             fn_index=67
         )
 
