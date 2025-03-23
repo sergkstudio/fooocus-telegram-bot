@@ -46,7 +46,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "1280×768",  # Aspect ratio
                     1,  # Number of images
                     "png",  # Output format
-                    seed,  # Seed
+                    "",  # Seed
                     False,  # Read wildcards
                     2,  # Sharpness
                     7,  # Guidance scale
