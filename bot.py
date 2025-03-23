@@ -205,26 +205,18 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for i in range(69, 73):
             client.predict(fn_index=i)
         
-        # Получаем результат с изображением (fn_index=73)
-        result = client.predict(fn_index=73)
-        logger.info(f"Fooocus API result with image: {result}")
-        
-        if result and isinstance(result, (list, tuple)) and len(result) >= 6:
-            # Получаем путь к изображению из компонента 'Preview' (индекс 5)
-            image_path = result[5]
+        if result and isinstance(result, (list, tuple)) and len(result) >= 4:
+            # Получаем путь к изображению из компонента 'Preview' (индекс 1)
+            image_path = result[1]
             if isinstance(image_path, str):
                 try:
-                    # Формируем URL для получения изображения
-                    image_url = urljoin(GRADIO_URL, f"file={image_path}")
-                    logger.info(f"Requesting image from: {image_url}")
-                    
-                    # Получаем изображение через HTTP
-                    response = requests.get(image_url)
-                    if response.status_code == 200:
-                        await update.message.reply_photo(photo=response.content)
+                    # Получаем изображение через client.predict
+                    image_data = client.predict(image_path, fn_index=68)
+                    if image_data:
+                        await update.message.reply_photo(photo=image_data)
                     else:
-                        logger.error(f"Failed to download image. Status code: {response.status_code}")
-                        await update.message.reply_text('Не удалось загрузить изображение с сервера.')
+                        logger.error("Failed to get image data")
+                        await update.message.reply_text('Не удалось получить данные изображения.')
                 except Exception as e:
                     logger.error(f"Error sending photo: {e}")
                     await update.message.reply_text('Не удалось отправить сгенерированное изображение.')
