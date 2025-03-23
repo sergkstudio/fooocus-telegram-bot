@@ -201,10 +201,6 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         result = client.predict(fn_index=68)
         logger.info(f"API result: {result}")
         
-        # Очистка кэша
-        for i in range(69, 73):
-            client.predict(fn_index=i)
-        
         # Проверим тип возвращаемого результата
         if isinstance(result, str):
             # Предположим, что это строка с URL изображения
