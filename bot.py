@@ -198,16 +198,18 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Получаем результат
         result = client.predict(fn_index=68)
-        logger.info(f"API result: {result}")
+        print("Raw API result:", result)  # Прямой вывод результата
         
         # Получаем изображение из результата
         if isinstance(result, (list, tuple)) and len(result) >= 4:
             # Получаем путь к изображению из компонента 'Preview' (индекс 1)
             image_path = result[1]
+            print("Image path:", image_path)  # Прямой вывод пути к изображению
+            
             if isinstance(image_path, str):
                 # Формируем URL для получения изображения
                 image_url = f"{GRADIO_URL}file={image_path}"
-                logger.info(f"Requesting image from: {image_url}")
+                print("Image URL:", image_url)  # Прямой вывод URL
                 
                 # Скачиваем изображение
                 response = requests.get(image_url)
@@ -225,6 +227,8 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
     except Exception as e:
         logger.error(f"Error generating image: {e}")
+        logger.error(f"Error type: {type(e)}")
+        logger.error(f"Error args: {e.args}")
         await update.message.reply_text('Произошла ошибка при генерации изображения.')
     finally:
         await status_message.delete()
