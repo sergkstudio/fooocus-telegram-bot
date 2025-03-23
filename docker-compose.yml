@@ -1,15 +1,8 @@
 version: '3.8'
 
 services:
-  bot:
+  fooocus-bot:
     build: .
-    container_name: fooocus-telegram-bot
     env_file:
       - .env
     restart: unless-stopped
-    networks:
-      - bot-network
-
-networks:
-  bot-network:
-    driver: bridge 
