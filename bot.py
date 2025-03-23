@@ -1,6 +1,8 @@
 import os
 import logging
+import base64
 import tempfile
+from io import BytesIO
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from gradio_client import Client
@@ -16,27 +18,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Конфигурация
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 FOOOCUS_API_URL = os.getenv('FOOOCUS_API_URL', 'http://localhost:7865')
 
-# Инициализация клиента Gradio
 client = Client(FOOOCUS_API_URL)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /start"""
     await update.message.reply_text(
-        'Привет! Я бот для генерации изображений с помощью Fooocus. '
-        'Отправь мне текстовое описание того, что хочешь увидеть.'
+        'Привет! Отправь мне текстовое описание для генерации изображения.'
     )
 
 async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик генерации изображений"""
-    prompt = update.message.text
+    prompt = update.message.text.strip()
     status_message = await update.message.reply_text('🔄 Генерация начата...')
     
     try:
-        # Первый вызов API для запуска генерации
+        # Запуск генерации изображения
         client.predict(
             False,  # Generate Image Grid
             prompt,
@@ -80,43 +77,61 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fn_index=67
         )
 
-        # Второй вызов для получения результатов
+        # Получение результатов генерации
         result = client.predict(fn_index=68)
-        logger.info(f"Raw API response: {result}")
+        logger.info(f"Raw API response type: {type(result)}")
 
-        # Обработка структуры ответа
-        if isinstance(result, tuple) and len(result) >= 3:
-            gallery_data = result[2]  # Finished Images Gallery
-            
-            if isinstance(gallery_data, list) and len(gallery_data) > 0:
-                first_image = gallery_data[0]
-                
-                if isinstance(first_image, dict) and 'name' in first_image:
-                    image_path = first_image['name']
-                    
-                    # Отправка изображения
-                    with open(image_path, 'rb') as photo:
-                        await update.message.reply_photo(
-                            photo=photo,
-                            caption=f"Результат для: {prompt[:200]}"
-                        )
-                    await status_message.delete()
-                    return
+        # Обработка различных форматов ответа
+        def extract_image_data(response):
+            if isinstance(response, (list, tuple)):
+                for item in response:
+                    if found := extract_image_data(item):
+                        return found
+            elif isinstance(response, dict):
+                if 'data' in response and 'image/' in response.get('mime_type', ''):
+                    return response['data']
+                if 'name' in response and response['name'].endswith('.png'):
+                    return response['name']
+            return None
 
-        await status_message.edit_text('⚠️ Не удалось обработать результат')
+        image_data = extract_image_data(result)
+
+        if not image_data:
+            raise ValueError("Image data not found in response")
+
+        # Обработка base64 данных
+        if isinstance(image_data, str) and image_data.startswith('data:image'):
+            header, data = image_data.split(',', 1)
+            image_bytes = base64.b64decode(data)
+        elif isinstance(image_data, str):
+            with open(image_data, 'rb') as f:
+                image_bytes = f.read()
+        else:
+            raise ValueError("Unsupported image data format")
+
+        # Отправка изображения
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+            temp_file.write(image_bytes)
+            temp_path = temp_file.name
+
+        try:
+            with open(temp_path, 'rb') as photo:
+                await update.message.reply_photo(
+                    photo=photo,
+                    caption=f"Результат для: {prompt[:200]}"
+                )
+            await status_message.delete()
+        finally:
+            os.unlink(temp_path)
 
     except Exception as e:
         logger.error(f'Ошибка генерации: {str(e)}', exc_info=True)
         await status_message.edit_text(f'❌ Ошибка: {str(e)}')
 
 def main():
-    """Запуск бота"""
     application = Application.builder().token(TELEGRAM_TOKEN).build()
-    
-    # Обработчики
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, generate_image))
-    
     application.run_polling()
 
 if __name__ == '__main__':
