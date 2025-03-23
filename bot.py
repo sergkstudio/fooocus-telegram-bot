@@ -1,6 +1,6 @@
 import os
 import logging
-import asyncio  # Добавлен недостающий импорт
+import asyncio
 import base64
 from io import BytesIO
 from telegram import Update
@@ -33,12 +33,13 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_message = await update.message.reply_text('🔄 Генерация начата...')
     
     try:
+        # Запуск задачи генерации
         job = client.submit(
             False,  # Generate Image Grid
             prompt,
             "!",  # Negative Prompt
             ["Fooocus V2"],  # Styles
-            "Quality",  # Performance
+            "Speed",  # Performance
             "1280×768",  # Aspect Ratio
             1,  # Image Number
             "png",  # Output Format
@@ -76,30 +77,48 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fn_index=67
         )
 
-        # Ожидание завершения генерации
+        # Ожидание завершения без проверки прогресса
         while not job.done():
-            await asyncio.sleep(0.5)
-            progress = job.status().progress
-            if progress:
-                await status_message.edit_text(f'🚧 Прогресс: {progress * 100:.1f}%')
+            await asyncio.sleep(1)
 
         # Получение результата
         result = job.result()
-        
-        # Обработка изображения
-        if isinstance(result, (list, tuple)) and len(result) > 2:
-            image_data = result[2][0]  # Предполагаем что изображение в третьем элементе
-            
-            if isinstance(image_data, dict) and 'data' in image_data:
-                image_bytes = base64.b64decode(image_data['data'])
-                await update.message.reply_photo(
-                    photo=BytesIO(image_bytes),
-                    caption=f"Результат: {prompt[:200]}"
-                )
-                await status_message.delete()
-                return
+        logger.info(f"Raw API response: {result}")
 
-        await status_message.edit_text('⚠️ Ошибка обработки результата')
+        # Обработка результата
+        def find_image_data(data):
+            if isinstance(data, list):
+                for item in data:
+                    if found := find_image_data(item):
+                        return found
+            elif isinstance(data, dict):
+                if 'data' in data and isinstance(data['data'], str) and data['data'].startswith('data:image'):
+                    return data['data']
+                if 'name' in data and isinstance(data['name'], str) and data['name'].endswith('.png'):
+                    return data['name']
+            return None
+
+        image_data = find_image_data(result)
+
+        if not image_data:
+            raise ValueError("Изображение не найдено в ответе API")
+
+        # Декодирование изображения
+        if isinstance(image_data, str) and image_data.startswith('data:image'):
+            _, encoded = image_data.split(",", 1)
+            image_bytes = base64.b64decode(encoded)
+        elif isinstance(image_data, str):
+            with open(image_data, "rb") as f:
+                image_bytes = f.read()
+        else:
+            raise ValueError("Неподдерживаемый формат изображения")
+
+        # Отправка изображения
+        await update.message.reply_photo(
+            photo=BytesIO(image_bytes),
+            caption=f"Результат: {prompt[:200]}"
+        )
+        await status_message.delete()
 
     except Exception as e:
         logger.error(f'Ошибка генерации: {str(e)}', exc_info=True)
