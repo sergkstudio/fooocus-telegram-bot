@@ -1,14 +1,9 @@
 import os
 import logging
-import asyncio
-import base64
-from io import BytesIO
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from gradio_client import Client
 from dotenv import load_dotenv
-import requests
-from requests.exceptions import RequestException
 
 # Загрузка переменных окружения
 load_dotenv()
@@ -20,153 +15,214 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-FOOOCUS_API_URL = os.getenv('FOOOCUS_API_URL', 'http://localhost:7865')
-
-def check_server_availability():
-    try:
-        response = requests.get(f"{FOOOCUS_API_URL}/config", timeout=5)
-        return response.status_code == 200
-    except RequestException:
-        return False
-
-# Инициализация клиента только если сервер доступен
-client = None
-if check_server_availability():
-    client = Client(FOOOCUS_API_URL)
-else:
-    logger.error(f"Fooocus сервер недоступен по адресу {FOOOCUS_API_URL}")
+# Инициализация клиента Gradio
+GRADIO_URL = os.getenv('GRADIO_URL', 'http://localhost:7865/')
+client = Client(GRADIO_URL)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if client is None:
-        await update.message.reply_text(
-            '⚠️ Сервис генерации изображений временно недоступен. Пожалуйста, попробуйте позже.'
-        )
-        return
-    
+    """Обработчик команды /start"""
     await update.message.reply_text(
-        'Привет! Отправь мне текстовое описание для генерации изображения.'
+        'Привет! Я бот для генерации изображений через Fooocus. '
+        'Отправь мне промпт, и я сгенерирую изображение.'
     )
 
 async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if client is None:
-        await update.message.reply_text(
-            '⚠️ Сервис генерации изображений временно недоступен. Пожалуйста, попробуйте позже.'
-        )
-        return
-
-    prompt = update.message.text.strip()
-    status_message = await update.message.reply_text('🔄 Генерация начата...')
+    """Обработчик текстовых сообщений для генерации изображений"""
+    prompt = update.message.text
+    
+    # Отправляем сообщение о начале генерации
+    status_message = await update.message.reply_text('Начинаю генерацию изображения...')
     
     try:
-        # Проверка доступности сервера перед генерацией
-        if not check_server_availability():
-            raise Exception("Сервер Fooocus недоступен")
-
-        # Запуск задачи генерации
-        job = client.submit(
-            False,  # Generate Image Grid
-            prompt,
-            "!",  # Negative Prompt
-            ["Fooocus V2"],  # Styles
+        # Запускаем генерацию (fn_index=67)
+        job = client.predict(
+            True,  # Generate Image Grid
+            prompt,  # Positive prompt
+            "",  # Negative prompt
+            ["Fooocus V2"],  # Style
             "Quality",  # Performance
-            "1280×768",  # Aspect Ratio
-            1,  # Image Number
-            "png",  # Output Format
-            "0",  # Seed
-            False,  # Read Wildcards Order
-            2,  # Sharpness
-            7,  # Guidance Scale
-            "juggernautXL_v8Rundiffusion.safetensors",  # Base Model
+            "704×1408",  # Aspect ratio
+            1,  # Number of images
+            "png",  # Output format
+            "",  # Seed
+            True,  # Read wildcards
+            0,  # Sharpness
+            1,  # Guidance scale
+            "juggernautXL_v8Rundiffusion.safetensors",  # Base model
             "None",  # Refiner
-            0.5,  # Refiner Switch
-            True, "None", -2,  # LoRA 1
-            True, "None", -2,  # LoRA 2
-            True, "None", -2,  # LoRA 3
-            True, "None", -2,  # LoRA 4
-            True, "None", -2,  # LoRA 5
-            False, "", "Disabled", "", ["Left"], "", "", "",  # Image Inputs
-            True, True, True, False, 1.5, 0.8, 0.3, 7, 2,  # Debug Settings
-            "dpmpp_2m_sde_gpu", "karras", "Default (model)",  # Sampler
-            -1, -1, -1, -1, -1, -1, False, False, False, False,  # Overrides
-            64, 128, "joint", 0.25, False, 1.01, 1.02, 0.99, 0.95,  # Advanced
-            False, False, "v2.6", 1, 0.618,  # Misc
-            False, False, 0, False, False, "fooocus",  # Metadata
-            "", 0, 0, "ImagePrompt",  # Image Prompts
-            "", 0, 0, "ImagePrompt",
-            "", 0, 0, "ImagePrompt",
-            "", 0, 0, "ImagePrompt",
-            False, 0, False, "",  # Enhance
-            False, "Disabled", "Before First Enhancement", "Original Prompts",  # Enhance
-            False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,  # Enhance
-            "v2.6", 1, 0.618, 0, False,
-            False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
-            "v2.6", 1, 0.618, 0, False,
-            False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
-            "v2.6", 1, 0.618, 0, False,
+            0.1,  # Refiner switch at
+            True,  # Enable refiner
+            "None",  # LoRA 1
+            -2,  # LoRA 1 weight
+            True,  # Enable LoRA 2
+            "None",  # LoRA 2
+            -2,  # LoRA 2 weight
+            True,  # Enable LoRA 3
+            "None",  # LoRA 3
+            -2,  # LoRA 3 weight
+            True,  # Enable LoRA 4
+            "None",  # LoRA 4
+            -2,  # LoRA 4 weight
+            True,  # Enable LoRA 5
+            "None",  # LoRA 5
+            -2,  # LoRA 5 weight
+            False,  # Input image
+            "",  # Input image prompt
+            "Disabled",  # Upscale or variation
+            None,  # Image
+            ["Left"],  # Outpaint direction
+            None,  # Image
+            "",  # Inpaint additional prompt
+            None,  # Mask
+            True,  # Disable preview
+            True,  # Disable intermediate results
+            True,  # Disable seed increment
+            True,  # Black out NSFW
+            0.1,  # Positive ADM guidance
+            0.1,  # Negative ADM guidance
+            0,  # ADM guidance end at step
+            1,  # CFG mimicking
+            1,  # CLIP skip
+            "euler",  # Sampler
+            "normal",  # Scheduler
+            "Default (model)",  # VAE
+            -1,  # Forced sampling steps
+            -1,  # Forced refiner switch step
+            -1,  # Forced width
+            -1,  # Forced height
+            -1,  # Forced vary strength
+            -1,  # Forced upscale strength
+            True,  # Mixing image prompt and vary/upscale
+            True,  # Mixing image prompt and inpaint
+            True,  # Debug preprocessors
+            True,  # Skip preprocessors
+            1,  # Canny low threshold
+            1,  # Canny high threshold
+            "joint",  # Refiner swap method
+            0,  # ControlNet softness
+            True,  # Enable advanced features
+            0,  # B1
+            0,  # B2
+            0,  # S1
+            0,  # S2
+            True,  # Debug inpaint preprocessing
+            True,  # Disable initial latent
+            "None",  # Inpaint engine
+            0,  # Inpaint denoising strength
+            0,  # Inpaint respective field
+            True,  # Enable advanced masking
+            True,  # Invert mask
+            -64,  # Mask erode/dilate
+            True,  # Save only final
+            True,  # Save metadata
+            "fooocus",  # Metadata scheme
+            None,  # Image
+            0,  # Stop at
+            0,  # Weight
+            "ImagePrompt",  # Type
+            None,  # Image
+            0,  # Stop at
+            0,  # Weight
+            "ImagePrompt",  # Type
+            None,  # Image
+            0,  # Stop at
+            0,  # Weight
+            "ImagePrompt",  # Type
+            None,  # Image
+            0,  # Stop at
+            0,  # Weight
+            "ImagePrompt",  # Type
+            True,  # Debug GroundingDINO
+            -64,  # GroundingDINO box erode/dilate
+            True,  # Debug enhance masks
+            None,  # Use with enhance
+            True,  # Enhance
+            "Disabled",  # Upscale or variation
+            "Before First Enhancement",  # Order of processing
+            "Original Prompts",  # Prompt
+            True,  # Enable
+            "",  # Detection prompt
+            "",  # Enhancement positive prompt
+            "",  # Enhancement negative prompt
+            "u2net",  # Mask generation model
+            "full",  # Cloth category
+            "vit_b",  # SAM model
+            0,  # Text threshold
+            0,  # Box threshold
+            0,  # Max detections
+            True,  # Disable initial latent
+            "None",  # Inpaint engine
+            0,  # Inpaint denoising strength
+            0,  # Inpaint respective field
+            -64,  # Mask erode/dilate
+            True,  # Invert mask
+            True,  # Enable
+            "",  # Detection prompt
+            "",  # Enhancement positive prompt
+            "",  # Enhancement negative prompt
+            "u2net",  # Mask generation model
+            "full",  # Cloth category
+            "vit_b",  # SAM model
+            0,  # Text threshold
+            0,  # Box threshold
+            0,  # Max detections
+            True,  # Disable initial latent
+            "None",  # Inpaint engine
+            0,  # Inpaint denoising strength
+            0,  # Inpaint respective field
+            -64,  # Mask erode/dilate
+            True,  # Invert mask
+            True,  # Enable
+            "",  # Detection prompt
+            "",  # Enhancement positive prompt
+            "",  # Enhancement negative prompt
+            "u2net",  # Mask generation model
+            "full",  # Cloth category
+            "vit_b",  # SAM model
+            0,  # Text threshold
+            0,  # Box threshold
+            0,  # Max detections
+            True,  # Disable initial latent
+            "None",  # Inpaint engine
+            0,  # Inpaint denoising strength
+            0,  # Inpaint respective field
+            -64,  # Mask erode/dilate
+            True,  # Invert mask
             fn_index=67
         )
 
-        # Ожидание завершения с таймаутом
-        timeout = 300  # 5 минут
-        start_time = asyncio.get_event_loop().time()
+        # Получаем результат (fn_index=68)
+        result = client.predict(fn_index=68)
         
-        while not job.done():
-            if asyncio.get_event_loop().time() - start_time > timeout:
-                raise TimeoutError("Превышено время ожидания генерации")
-            await asyncio.sleep(1)
-
-        # Получение результата
-        result = job.result()
-        logger.info(f"Raw API response: {result}")
-
-        # Обработка результата
-        def find_image_data(data):
-            if isinstance(data, list):
-                for item in data:
-                    if found := find_image_data(item):
-                        return found
-            elif isinstance(data, dict):
-                if 'data' in data and isinstance(data['data'], str) and data['data'].startswith('data:image'):
-                    return data['data']
-                if 'name' in data and isinstance(data['name'], str) and data['name'].endswith('.png'):
-                    return data['name']
-            return None
-
-        image_data = find_image_data(result)
-
-        if not image_data:
-            raise ValueError("Изображение не найдено в ответе API")
-
-        # Декодирование изображения
-        if isinstance(image_data, str) and image_data.startswith('data:image'):
-            _, encoded = image_data.split(",", 1)
-            image_bytes = base64.b64decode(encoded)
-        elif isinstance(image_data, str):
-            with open(image_data, "rb") as f:
-                image_bytes = f.read()
+        # Отправляем сгенерированное изображение
+        if result and len(result) > 2:
+            image_path = result[2]  # Путь к сгенерированному изображению
+            await update.message.reply_photo(photo=open(image_path, 'rb'))
         else:
-            raise ValueError("Неподдерживаемый формат изображения")
-
-        # Отправка изображения
-        await update.message.reply_photo(
-            photo=BytesIO(image_bytes),
-            caption=f"Результат: {prompt[:200]}"
-        )
+            await update.message.reply_text('Не удалось сгенерировать изображение.')
+            
+    except Exception as e:
+        logger.error(f"Error generating image: {e}")
+        await update.message.reply_text('Произошла ошибка при генерации изображения.')
+    finally:
         await status_message.delete()
 
-    except Exception as e:
-        logger.error(f'Ошибка генерации: {str(e)}', exc_info=True)
-        await status_message.edit_text(f'❌ Ошибка: {str(e)}')
-
 def main():
-    if client is None:
-        logger.error("Не удалось инициализировать клиент Fooocus. Бот запущен в ограниченном режиме.")
-    
-    application = Application.builder().token(TELEGRAM_TOKEN).build()
+    """Запуск бота"""
+    # Получаем токен из переменных окружения
+    token = os.getenv('TELEGRAM_TOKEN')
+    if not token:
+        raise ValueError("TELEGRAM_TOKEN не установлен в переменных окружения")
+
+    # Создаем приложение
+    application = Application.builder().token(token).build()
+
+    # Добавляем обработчики
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, generate_image))
-    application.run_polling()
+
+    # Запускаем бота
+    application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
-    main()
+    main() 
