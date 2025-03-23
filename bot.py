@@ -1,5 +1,6 @@
 import os
 import logging
+import random
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from gradio_client import Client
@@ -34,6 +35,9 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_message = await update.message.reply_text('Начинаю генерацию изображения...')
     
     try:
+        # Генерируем случайное значение для seed
+        seed = str(random.randint(1, 1000000))
+        
         # Запускаем генерацию (fn_index=67)
         job = client.predict(
             True,  # Generate Image Grid
@@ -44,7 +48,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "704×1408",  # Aspect ratio
             1,  # Number of images
             "png",  # Output format
-            "",  # Seed
+            seed,  # Seed
             True,  # Read wildcards
             0,  # Sharpness
             1,  # Guidance scale
