@@ -207,20 +207,20 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         # Проверим тип возвращаемого результата
         if isinstance(result, (list, tuple)) and len(result) >= 4:
-            # Получаем путь к изображению из компонента 'Preview' (индекс 1)
-            image_path = result[1]
+            # Получаем путь к изображению из компонента 'Finished Images' Gallery (индекс 2)
+            image_path = result[2]
             if isinstance(image_path, str):
-                # Формируем URL для получения изображения
-                image_url = f"{GRADIO_URL}file={image_path}"
-                logger.info(f"Requesting image from: {image_url}")
-                
-                # Скачиваем изображение
-                response = requests.get(image_url)
-                if response.status_code == 200:
-                    await update.message.reply_photo(photo=response.content)
-                else:
-                    logger.error(f"Failed to download image. Status code: {response.status_code}")
-                    await update.message.reply_text('Не удалось загрузить изображение.')
+                try:
+                    # Получаем изображение через client.predict
+                    image_data = client.predict(image_path, fn_index=68)
+                    if image_data:
+                        await update.message.reply_photo(photo=image_data)
+                    else:
+                        logger.error("Failed to get image data")
+                        await update.message.reply_text('Не удалось получить данные изображения.')
+                except Exception as e:
+                    logger.error(f"Error sending photo: {e}")
+                    await update.message.reply_text('Не удалось отправить сгенерированное изображение.')
             else:
                 logger.error(f"Invalid image path type: {type(image_path)}")
                 await update.message.reply_text('Не удалось сгенерировать изображение: неверный тип пути к файлу.')
