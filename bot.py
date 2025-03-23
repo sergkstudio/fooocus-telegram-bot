@@ -196,10 +196,14 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             False,  # Invert mask
             fn_index=67
         )
+        
+        logger.info(f"First predict result type: {type(job)}")
+        logger.info(f"First predict result: {job}")
 
         # Получаем результат
         result = client.predict(fn_index=68)
-        logger.info(f"API result: {result}")
+        logger.info(f"Second predict result type: {type(result)}")
+        logger.info(f"Second predict result: {result}")
         
         # Проверим тип возвращаемого результата
         if isinstance(result, str):
