@@ -5,8 +5,8 @@
 ## Требования
 
 - Python 3.10 или выше
-- Docker (опционально)
-- Доступ к Fooocus API (должен быть запущен и доступен по указанному URL)
+- Docker и Docker Compose (опционально)
+- Доступ к Fooocus API (должен быть запущен на удаленном сервере)
 
 ## Установка
 
@@ -21,7 +21,9 @@ cd fooocus-telegram-bot
 cp .env.example .env
 ```
 
-3. Отредактируйте `.env` файл, добавив ваш токен Telegram бота и URL Fooocus API.
+3. Отредактируйте `.env` файл:
+   - Добавьте ваш токен Telegram бота
+   - Укажите URL вашего Fooocus API (например, `http://your-server-ip:7865/`)
 
 ## Запуск
 
@@ -37,7 +39,14 @@ pip install -r requirements.txt
 python bot.py
 ```
 
-### С Docker
+### С Docker Compose (рекомендуется)
+
+1. Запустите бота:
+```bash
+docker-compose up -d
+```
+
+### С Docker (без docker-compose)
 
 1. Соберите Docker образ:
 ```bash
@@ -60,4 +69,5 @@ docker run -d --env-file .env --name fooocus-bot fooocus-telegram-bot
 
 - Убедитесь, что Fooocus API доступен по указанному URL
 - Для работы бота необходим валидный токен Telegram бота
-- Время генерации изображения может варьироваться в зависимости от нагрузки на API 
+- Время генерации изображения может варьироваться в зависимости от нагрузки на API и сетевой задержки
+- Если Fooocus API защищен паролем, добавьте его в URL: `http://username:password@your-server-ip:7865/` 
