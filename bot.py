@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 # Инициализация клиента Gradio
 GRADIO_URL = os.getenv('GRADIO_URL', 'http://localhost:7865/')
+logger.info(f"Initializing Gradio client with URL: {GRADIO_URL}")
 client = Client(GRADIO_URL)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -30,6 +31,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик текстовых сообщений для генерации изображений"""
     prompt = update.message.text
+    logger.info(f"Received prompt: {prompt}")
     
     # Отправляем сообщение о начале генерации
     status_message = await update.message.reply_text('Начинаю генерацию изображения...')
@@ -37,18 +39,21 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Генерируем случайное значение для seed
         seed = str(random.randint(1, 1000000))
+        logger.info(f"Generated seed: {seed}")
         
-        print("\n=== First predict call ===")
-        print("Prompt:", prompt)
-        print("Seed:", seed)
+        logger.info("Starting image generation with parameters:")
+        logger.info(f"Prompt: {prompt}")
+        logger.info(f"Seed: {seed}")
+        logger.info(f"GRADIO_URL: {GRADIO_URL}")
         
         # Запускаем генерацию (fn_index=67)
+        logger.info("Calling client.predict with fn_index=67")
         result = client.predict(
             True,  # Generate Image Grid
             prompt,  # Positive prompt
             "!",  # Negative prompt
             ["Fooocus V2"],  # Style
-            "Hyper-SD",  # Performance
+            "Quality",  # Performance
             "704×1408 <span style=\"color: grey;\"> ∣ 1:2</span>",  # Aspect ratio
             1,  # Number of images
             "png",  # Output format
@@ -199,12 +204,49 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fn_index=67
         )
         
-        print("\n=== API Result ===")
-        print("Type:", type(result))
-        print("Result:", result)
-        print("================\n")
+        logger.info("Received result from client.predict")
+        logger.info(f"Result type: {type(result)}")
+        logger.info(f"Result: {result}")
         
-        await update.message.reply_text('Изображение сгенерировано. Проверьте консоль для просмотра результата.')
+        # Проверяем, что результат не None
+        if result is None:
+            logger.error("Received None result from client.predict")
+            await update.message.reply_text('Ошибка: не получен результат от API.')
+            return
+            
+        # Проверяем, что результат содержит путь к изображению
+        if isinstance(result, (list, tuple)) and len(result) >= 3:
+            image_path = result[2]
+            logger.info(f"Found image path: {image_path}")
+            
+            # Формируем URL для скачивания изображения
+            image_url = f"{GRADIO_URL}file={image_path}"
+            logger.info(f"Image URL: {image_url}")
+            
+            # Скачиваем изображение
+            import requests
+            response = requests.get(image_url)
+            if response.status_code == 200:
+                # Сохраняем изображение во временный файл
+                with open('temp_image.png', 'wb') as f:
+                    f.write(response.content)
+                logger.info("Image downloaded successfully")
+                
+                # Отправляем изображение пользователю
+                with open('temp_image.png', 'rb') as photo:
+                    await update.message.reply_photo(photo=photo)
+                logger.info("Image sent to user")
+                
+                # Удаляем временный файл
+                if os.path.exists('temp_image.png'):
+                    os.remove('temp_image.png')
+                    logger.info("Temporary file deleted")
+            else:
+                logger.error(f"Failed to download image. Status code: {response.status_code}")
+                await update.message.reply_text('Ошибка при скачивании изображения.')
+        else:
+            logger.error(f"Unexpected result format: {result}")
+            await update.message.reply_text('Ошибка: неверный формат результата от API.')
             
     except Exception as e:
         logger.error(f"Error generating image: {e}")
