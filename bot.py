@@ -49,11 +49,11 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				"Howdy!",	# str # in 'Negative Prompt' Textbox component
 				["Fooocus V2"],	# List[str] # in 'Selected Styles' Checkboxgroup component
 				"Quality",	# str # in 'Performance' Radio component
-				"704×1408 <span style="color: grey;"> ∣ 1:2</span>",	# str # in 'Aspect Ratios' Radio component
+				"704×1408",	# str # in 'Aspect Ratios' Radio component
 				1,	# int | float (numeric value between 1 and 32)
 								# in 'Image Number' Slider component
 				"png",	# str # in 'Output Format' Radio component
-				"Howdy!",	# str # in 'Seed' Textbox component
+				seed,	# str # in 'Seed' Textbox component
 				True,	# bool # in 'Read wildcards in order' Checkbox component
 				0,	# int | float (numeric value between 0.0 and 30.0)
 								# in 'Image Sharpness' Slider component
@@ -287,6 +287,11 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				True,	# bool # in 'Invert Mask' Checkbox component
 				fn_index=67
         )
+        
+        if job is None:
+            logger.error("Получен None от первого вызова predict.")
+            await update.message.reply_text('Ошибка: не удалось получить результат.')
+            return
         
         print("Job type:", type(job))
         print("Job:", job)
