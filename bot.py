@@ -224,6 +224,33 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 logger.error(f"Invalid image path type: {type(image_path)}")
                 await update.message.reply_text('Не удалось сгенерировать изображение: неверный тип пути к файлу.')
+        elif isinstance(result, dict):
+            # Обработка случая, когда результат - словарь
+            if 'outputs' in result and isinstance(result['outputs'], list) and len(result['outputs']) > 0:
+                image_info = result['outputs'][0]
+                if isinstance(image_info, dict) and 'imagename' in image_info:
+                    image_path = image_info['imagename']
+                    if isinstance(image_path, str):
+                        # Формируем URL для получения изображения
+                        image_url = f"{GRADIO_URL}file={image_path}"
+                        logger.info(f"Requesting image from: {image_url}")
+                        
+                        # Скачиваем изображение
+                        response = requests.get(image_url)
+                        if response.status_code == 200:
+                            await update.message.reply_photo(photo=response.content)
+                        else:
+                            logger.error(f"Failed to download image. Status code: {response.status_code}")
+                            await update.message.reply_text('Не удалось загрузить изображение.')
+                    else:
+                        logger.error(f"Invalid image path type in dict: {type(image_path)}")
+                        await update.message.reply_text('Не удалось сгенерировать изображение: неверный тип пути к файлу.')
+                else:
+                    logger.error(f"Invalid image info format: {image_info}")
+                    await update.message.reply_text('Не удалось сгенерировать изображение: неверный формат информации об изображении.')
+            else:
+                logger.error(f"Invalid outputs format: {result.get('outputs')}")
+                await update.message.reply_text('Не удалось сгенерировать изображение: неверный формат вывода.')
         else:
             logger.error(f"Invalid result format: {result}")
             await update.message.reply_text('Не удалось сгенерировать изображение: неверный формат результата.')
