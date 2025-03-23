@@ -1,6 +1,7 @@
 import os
 import logging
 import random
+import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from gradio_client import Client
@@ -44,7 +45,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             prompt,  # Positive prompt
             "!",  # Negative prompt
             ["Fooocus V2"],  # Style
-            "Speed",  # Performance
+            "Hyper-SD",  # Performance
             "1280×768",  # Aspect ratio
             1,  # Number of images
             "png",  # Output format
@@ -201,18 +202,26 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         # Получаем изображение из результата
         if isinstance(result, (list, tuple)) and len(result) >= 4:
-            image_path = result[2]  # Получаем путь к изображению из третьего элемента
+            # Получаем путь к изображению из компонента 'Preview' (индекс 1)
+            image_path = result[1]
             if isinstance(image_path, str):
+                # Формируем URL для получения изображения
+                image_url = f"{GRADIO_URL}file={image_path}"
+                logger.info(f"Requesting image from: {image_url}")
+                
                 # Скачиваем изображение
-                image_data = client.predict(fn_index=68, inputs=[image_path])
-                if image_data:
-                    await update.message.reply_photo(photo=image_data)
+                response = requests.get(image_url)
+                if response.status_code == 200:
+                    await update.message.reply_photo(photo=response.content)
                 else:
-                    await update.message.reply_text('Не удалось получить изображение.')
+                    logger.error(f"Failed to download image. Status code: {response.status_code}")
+                    await update.message.reply_text('Не удалось загрузить изображение.')
             else:
-                await update.message.reply_text('Неверный формат пути к изображению.')
+                logger.error(f"Invalid image path type: {type(image_path)}")
+                await update.message.reply_text('Не удалось сгенерировать изображение: неверный тип пути к файлу.')
         else:
-            await update.message.reply_text('Неверный формат результата от API.')
+            logger.error(f"Invalid result format: {result}")
+            await update.message.reply_text('Не удалось сгенерировать изображение: неверный формат результата.')
             
     except Exception as e:
         logger.error(f"Error generating image: {e}")
