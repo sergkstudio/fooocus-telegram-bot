@@ -18,7 +18,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 FOOOCUS_API_URL = os.getenv('FOOOCUS_API_URL', 'http://localhost:7865')
 
 client = Client(FOOOCUS_API_URL)
