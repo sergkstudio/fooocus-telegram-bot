@@ -201,25 +201,27 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         result = client.predict(fn_index=68)
         logger.info(f"Fooocus API result: {result}")
         
-        # Очистка кэша
-        for i in range(69, 73):
-            client.predict(fn_index=i)
+
         
         # Извлечение URL изображения
         if isinstance(result, dict) and 'outputs' in result:
-            image_path = result['outputs'][0]  # Пример для структуры ответа
-            image_url = urljoin(GRADIO_URL, image_path)
+            image_path = result['outputs'][0]['imagename'].split('file=')[-1]
+            image_url = f"{GRADIO_URL}file={image_path}"
             
             # Скачивание изображения
             response = requests.get(image_url)
             if response.status_code == 200:
                 await update.message.reply_photo(photo=response.content)
             else:
+                logger.error(f"Failed to download image. Status code: {response.status_code}")
                 await update.message.reply_text('Ошибка загрузки изображения')
-        
+        else:
+            logger.error(f"Invalid result format: {result}")
+            await update.message.reply_text('Не удалось сгенерировать изображение: неверный формат результата')
+            
     except Exception as e:
-        logger.error(f"Error: {e}")
-        await update.message.reply_text('Ошибка генерации')
+        logger.error(f"Error generating image: {e}")
+        await update.message.reply_text('Произошла ошибка при генерации изображения.')
     finally:
         await status_message.delete()
 
