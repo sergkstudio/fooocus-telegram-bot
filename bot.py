@@ -52,7 +52,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             False,  # Read wildcards
             2,  # Sharpness
             7,  # Guidance scale
-            "animaPencilXL_v500.safetensors",  # Base model
+            "juggernautXL_v8Rundiffusion.safetensors",  # Base model
             "None",  # Refiner
             0.5,  # Refiner switch at
             True,  # Enable refiner
