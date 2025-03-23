@@ -104,7 +104,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				True,	# bool # in 'Disable Preview' Checkbox component
 				True,	# bool # in 'Disable Intermediate Results' Checkbox component
 				True,	# bool # in 'Disable seed increment' Checkbox component
-				True,	# bool # in 'Black Out NSFW' Checkbox component
+				False,	# bool # in 'Black Out NSFW' Checkbox component
 				0.1,	# int | float (numeric value between 0.1 and 3.0)
 								# in 'Positive ADM Guidance Scaler' Slider component
 				0.1,	# int | float (numeric value between 0.1 and 3.0)
