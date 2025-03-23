@@ -1,7 +1,6 @@
 import os
 import logging
 import base64
-import tempfile
 from io import BytesIO
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
@@ -33,8 +32,8 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_message = await update.message.reply_text('🔄 Генерация начата...')
     
     try:
-        # Запуск генерации изображения
-        client.predict(
+        # Создаем job для асинхронной обработки
+        job = client.submit(
             False,  # Generate Image Grid
             prompt,
             "!",  # Negative Prompt
@@ -77,52 +76,34 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fn_index=67
         )
 
-        # Получение результатов генерации
-        result = client.predict(fn_index=68)
-        logger.info(f"Raw API response type: {type(result)}")
+        # Обработка событий
+        final_result = None
+        while not job.done():
+            await asyncio.sleep(0.1)
+            for event in job.communicator.events:
+                if event.event == "process_completed":
+                    final_result = job.outputs()
 
-        # Обработка различных форматов ответа
-        def extract_image_data(response):
-            if isinstance(response, (list, tuple)):
-                for item in response:
-                    if found := extract_image_data(item):
-                        return found
-            elif isinstance(response, dict):
-                if 'data' in response and 'image/' in response.get('mime_type', ''):
-                    return response['data']
-                if 'name' in response and response['name'].endswith('.png'):
-                    return response['name']
-            return None
+        # Обработка результата
+        if final_result:
+            images = final_result[2]  # Finished Images Gallery
+            if images and len(images) > 0:
+                first_image = images[0]
+                
+                # Получаем base64 из данных изображения
+                if isinstance(first_image, dict) and 'data' in first_image:
+                    image_bytes = base64.b64decode(first_image['data'])
+                    bio = BytesIO(image_bytes)
+                    bio.seek(0)
+                    
+                    await update.message.reply_photo(
+                        photo=bio,
+                        caption=f"Результат: {prompt[:200]}"
+                    )
+                    await status_message.delete()
+                    return
 
-        image_data = extract_image_data(result)
-
-        if not image_data:
-            raise ValueError("Image data not found in response")
-
-        # Обработка base64 данных
-        if isinstance(image_data, str) and image_data.startswith('data:image'):
-            header, data = image_data.split(',', 1)
-            image_bytes = base64.b64decode(data)
-        elif isinstance(image_data, str):
-            with open(image_data, 'rb') as f:
-                image_bytes = f.read()
-        else:
-            raise ValueError("Unsupported image data format")
-
-        # Отправка изображения
-        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
-            temp_file.write(image_bytes)
-            temp_path = temp_file.name
-
-        try:
-            with open(temp_path, 'rb') as photo:
-                await update.message.reply_photo(
-                    photo=photo,
-                    caption=f"Результат для: {prompt[:200]}"
-                )
-            await status_message.delete()
-        finally:
-            os.unlink(temp_path)
+        await status_message.edit_text('⚠️ Не удалось сгенерировать изображение')
 
     except Exception as e:
         logger.error(f'Ошибка генерации: {str(e)}', exc_info=True)
