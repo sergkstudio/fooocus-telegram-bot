@@ -1,13 +1,22 @@
-FROM python:3.10-slim
+# Используем официальный образ Python
+FROM python:3.11-slim
 
+# Устанавливаем зависимости системы
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Создаем рабочую директорию
 WORKDIR /app
 
-# Установка зависимостей
+# Копируем зависимости
 COPY requirements.txt .
-RUN pip install --upgrade pip --no-cache-dir -r requirements.txt
 
-# Копирование файлов проекта
+# Устанавливаем Python-зависимости
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копируем исходный код
 COPY . .
 
-# Запуск бота
-CMD ["python", "bot.py"] 
+# Запускаем бота
+CMD ["python", "bot.py"]
