@@ -46,7 +46,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         job = client.predict(
 				True,	# bool # in 'Generate Image Grid for Each Batch' Checkbox component
 				prompt,	# str # in 'parameter_12' Textbox component
-				"Howdy!",	# str # in 'Negative Prompt' Textbox component
+				"",	# str # in 'Negative Prompt' Textbox component
 				["Fooocus V2"],	# List[str] # in 'Selected Styles' Checkboxgroup component
 				"Quality",	# str # in 'Performance' Radio component
 				"704×1408",	# str # in 'Aspect Ratios' Radio component
@@ -91,14 +91,14 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				-2,	# int | float (numeric value between -2 and 2)
 								# in 'Weight' Slider component
 				True,	# bool # in 'Input Image' Checkbox component
-				"Howdy!",	# str # in 'parameter_212' Textbox component
+				"",	# str # in 'parameter_212' Textbox component
 				"Disabled",	# str # in 'Upscale or Variation:' Radio component
 				"",	# str (filepath or URL to image)
 								# in 'Image' Image component
 				["Left"],	# List[str] # in 'Outpaint Direction' Checkboxgroup component
 				"",	# str (filepath or URL to image)
 								# in 'Image' Image component
-				"Howdy!",	# str # in 'Inpaint Additional Prompt' Textbox component
+				"",	# str # in 'Inpaint Additional Prompt' Textbox component
 				"",	# str (filepath or URL to image)
 								# in 'Mask Upload' Image component
 				True,	# bool # in 'Disable Preview' Checkbox component
@@ -208,9 +208,9 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				"Before First Enhancement",	# str # in 'Order of Processing' Radio component
 				"Original Prompts",	# str # in 'Prompt' Radio component
 				True,	# bool # in 'Enable' Checkbox component
-				"Howdy!",	# str # in 'Detection prompt' Textbox component
-				"Howdy!",	# str # in 'Enhancement positive prompt' Textbox component
-				"Howdy!",	# str # in 'Enhancement negative prompt' Textbox component
+				"",	# str # in 'Detection prompt' Textbox component
+				"",	# str # in 'Enhancement positive prompt' Textbox component
+				"",	# str # in 'Enhancement negative prompt' Textbox component
 				"u2net",	# str (Option from: ['u2net', 'u2netp', 'u2net_human_seg', 'u2net_cloth_seg', 'silueta', 'isnet-general-use', 'isnet-anime', 'sam'])
 								# in 'Mask generation model' Dropdown component
 				"full",	# str (Option from: ['full', 'upper', 'lower'])
@@ -234,9 +234,9 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 								# in 'Mask Erode or Dilate' Slider component
 				True,	# bool # in 'Invert Mask' Checkbox component
 				True,	# bool # in 'Enable' Checkbox component
-				"Howdy!",	# str # in 'Detection prompt' Textbox component
-				"Howdy!",	# str # in 'Enhancement positive prompt' Textbox component
-				"Howdy!",	# str # in 'Enhancement negative prompt' Textbox component
+				"",	# str # in 'Detection prompt' Textbox component
+				"",	# str # in 'Enhancement positive prompt' Textbox component
+				"",	# str # in 'Enhancement negative prompt' Textbox component
 				"u2net",	# str (Option from: ['u2net', 'u2netp', 'u2net_human_seg', 'u2net_cloth_seg', 'silueta', 'isnet-general-use', 'isnet-anime', 'sam'])
 								# in 'Mask generation model' Dropdown component
 				"full",	# str (Option from: ['full', 'upper', 'lower'])
@@ -260,9 +260,9 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 								# in 'Mask Erode or Dilate' Slider component
 				True,	# bool # in 'Invert Mask' Checkbox component
 				True,	# bool # in 'Enable' Checkbox component
-				"Howdy!",	# str # in 'Detection prompt' Textbox component
-				"Howdy!",	# str # in 'Enhancement positive prompt' Textbox component
-				"Howdy!",	# str # in 'Enhancement negative prompt' Textbox component
+				"",	# str # in 'Detection prompt' Textbox component
+				"",	# str # in 'Enhancement positive prompt' Textbox component
+				"",	# str # in 'Enhancement negative prompt' Textbox component
 				"u2net",	# str (Option from: ['u2net', 'u2netp', 'u2net_human_seg', 'u2net_cloth_seg', 'silueta', 'isnet-general-use', 'isnet-anime', 'sam'])
 								# in 'Mask generation model' Dropdown component
 				"full",	# str (Option from: ['full', 'upper', 'lower'])
