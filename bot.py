@@ -223,7 +223,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     """Основная функция запуска бота"""
     # Получаем токен бота из переменных окружения
-    token = os.getenv('TELEGRAM_BOT_TOKEN')
+    token = os.getenv('TELEGRAM_TOKEN')
     if not token:
         raise ValueError("TELEGRAM_BOT_TOKEN не установлен в переменных окружения")
     
