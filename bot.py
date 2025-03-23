@@ -43,11 +43,11 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         # Запускаем генерацию (fn_index=67)
         job = client.predict(
-            False,  # Generate Image Grid
+            True,  # Generate Image Grid
             prompt,  # Positive prompt
             "!",  # Negative prompt
             ["Fooocus V2"],  # Style
-            "Speed",  # Performance
+            "Hyper-SD",  # Performance
             "1280×768",  # Aspect ratio
             1,  # Number of images
             "png",  # Output format
