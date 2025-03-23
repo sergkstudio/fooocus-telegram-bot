@@ -200,38 +200,6 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         result = client.predict(fn_index=68)
         print("Raw API result:", result)  # Прямой вывод результата
         
-        # Получаем изображение из результата
-        if isinstance(result, (list, tuple)) and len(result) >= 4:
-            # Получаем путь к изображению из компонента 'Preview' (индекс 1)
-            image_path = result[1]
-            print("Image path:", image_path)  # Прямой вывод пути к изображению
-            
-            if isinstance(image_path, str):
-                # Формируем URL для получения изображения
-                image_url = f"{GRADIO_URL}file={image_path}"
-                print("Image URL:", image_url)  # Прямой вывод URL
-                
-                # Скачиваем изображение
-                response = requests.get(image_url)
-                if response.status_code == 200:
-                    await update.message.reply_photo(photo=response.content)
-                else:
-                    logger.error(f"Failed to download image. Status code: {response.status_code}")
-                    await update.message.reply_text('Не удалось загрузить изображение.')
-            else:
-                logger.error(f"Invalid image path type: {type(image_path)}")
-                await update.message.reply_text('Не удалось сгенерировать изображение: неверный тип пути к файлу.')
-        else:
-            logger.error(f"Invalid result format: {result}")
-            await update.message.reply_text('Не удалось сгенерировать изображение: неверный формат результата.')
-            
-    except Exception as e:
-        logger.error(f"Error generating image: {e}")
-        logger.error(f"Error type: {type(e)}")
-        logger.error(f"Error args: {e.args}")
-        await update.message.reply_text('Произошла ошибка при генерации изображения.')
-    finally:
-        await status_message.delete()
 
 def main():
     """Основная функция запуска бота"""
