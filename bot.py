@@ -8,10 +8,8 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 from gradio_client import Client
 from dotenv import load_dotenv
 
-# Загрузка переменных окружения
 load_dotenv()
 
-# Настройка логирования
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -33,13 +31,13 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_message = await update.message.reply_text('🔄 Генерация начата...')
     
     try:
-        # Запуск задачи генерации
-        job = client.submit(
+        # Первый вызов - запуск генерации
+        client.predict(
             False,  # Generate Image Grid
             prompt,
             "!",  # Negative Prompt
             ["Fooocus V2"],  # Styles
-            "Speed",  # Performance
+            "Quality",  # Performance
             "1280×768",  # Aspect Ratio
             1,  # Image Number
             "png",  # Output Format
@@ -77,48 +75,36 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fn_index=67
         )
 
-        # Ожидание завершения без проверки прогресса
-        while not job.done():
-            await asyncio.sleep(1)
+        # Второй вызов - получение результатов
+        result = client.predict(fn_index=68)
+        logger.info(f"API Response Structure: {type(result)} - {str(result)[:500]}")
 
-        # Получение результата
-        result = job.result()
-        logger.info(f"Raw API response: {result}")
+        # Обработка структуры ответа
+        if isinstance(result, tuple) and len(result) >= 3:
+            gallery = result[2]  # Индекс 2 соответствует Finished Images Gallery
+            if isinstance(gallery, list) and len(gallery) > 0:
+                first_image = gallery[0]
+                if isinstance(first_image, dict):
+                    if 'data' in first_image:
+                        # Декодирование base64
+                        image_data = first_image['data'].split(",", 1)[1]
+                        image_bytes = base64.b64decode(image_data)
+                    elif 'name' in first_image:
+                        # Чтение из файла
+                        with open(first_image['name'], "rb") as f:
+                            image_bytes = f.read()
+                    else:
+                        raise ValueError("Неизвестный формат изображения")
+                    
+                    # Отправка изображения
+                    await update.message.reply_photo(
+                        photo=BytesIO(image_bytes),
+                        caption=f"Результат: {prompt[:200]}"
+                    )
+                    await status_message.delete()
+                    return
 
-        # Обработка результата
-        def find_image_data(data):
-            if isinstance(data, list):
-                for item in data:
-                    if found := find_image_data(item):
-                        return found
-            elif isinstance(data, dict):
-                if 'data' in data and isinstance(data['data'], str) and data['data'].startswith('data:image'):
-                    return data['data']
-                if 'name' in data and isinstance(data['name'], str) and data['name'].endswith('.png'):
-                    return data['name']
-            return None
-
-        image_data = find_image_data(result)
-
-        if not image_data:
-            raise ValueError("Изображение не найдено в ответе API")
-
-        # Декодирование изображения
-        if isinstance(image_data, str) and image_data.startswith('data:image'):
-            _, encoded = image_data.split(",", 1)
-            image_bytes = base64.b64decode(encoded)
-        elif isinstance(image_data, str):
-            with open(image_data, "rb") as f:
-                image_bytes = f.read()
-        else:
-            raise ValueError("Неподдерживаемый формат изображения")
-
-        # Отправка изображения
-        await update.message.reply_photo(
-            photo=BytesIO(image_bytes),
-            caption=f"Результат: {prompt[:200]}"
-        )
-        await status_message.delete()
+        raise ValueError("Изображение не найдено в ответе API")
 
     except Exception as e:
         logger.error(f'Ошибка генерации: {str(e)}', exc_info=True)
