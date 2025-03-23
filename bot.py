@@ -43,22 +43,22 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print("Seed:", seed)
         
         # Запускаем генерацию (fn_index=67)
-        job = client.predict(
-            False,  # Generate Image Grid
+        result = client.predict(
+            True,  # Generate Image Grid
             prompt,  # Positive prompt
             "!",  # Negative prompt
             ["Fooocus V2"],  # Style
             "Hyper-SD",  # Performance
-            "1280×768",  # Aspect ratio
+            "704×1408 <span style=\"color: grey;\"> ∣ 1:2</span>",  # Aspect ratio
             1,  # Number of images
             "png",  # Output format
             seed,  # Seed
-            False,  # Read wildcards
-            2,  # Sharpness
-            7,  # Guidance scale
+            True,  # Read wildcards
+            0,  # Sharpness
+            1,  # Guidance scale
             "juggernautXL_v8Rundiffusion.safetensors",  # Base model
             "None",  # Refiner
-            0.5,  # Refiner switch at
+            0.1,  # Refiner switch at
             True,  # Enable refiner
             "None",  # LoRA 1
             -2,  # LoRA 1 weight
@@ -74,8 +74,8 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             True,  # Enable LoRA 5
             "None",  # LoRA 5
             -2,  # LoRA 5 weight
-            False,  # Input image
-            "",  # Input image prompt
+            True,  # Input image
+            prompt,  # Input image prompt
             "Disabled",  # Upscale or variation
             "",  # Image
             ["Left"],  # Outpaint direction
@@ -85,14 +85,14 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             True,  # Disable preview
             True,  # Disable intermediate results
             True,  # Disable seed increment
-            False,  # Black out NSFW
-            1.5,  # Positive ADM guidance
-            0.8,  # Negative ADM guidance
-            0.3,  # ADM guidance end at step
-            7,  # CFG mimicking
-            2,  # CLIP skip
-            "dpmpp_2m_sde_gpu",  # Sampler
-            "karras",  # Scheduler
+            True,  # Black out NSFW
+            0.1,  # Positive ADM guidance
+            0.1,  # Negative ADM guidance
+            0,  # ADM guidance end at step
+            1,  # CFG mimicking
+            1,  # CLIP skip
+            "euler",  # Sampler
+            "normal",  # Scheduler
             "Default (model)",  # VAE
             -1,  # Forced sampling steps
             -1,  # Forced refiner switch step
@@ -100,29 +100,29 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             -1,  # Forced height
             -1,  # Forced vary strength
             -1,  # Forced upscale strength
-            False,  # Mixing image prompt and vary/upscale
-            False,  # Mixing image prompt and inpaint
-            False,  # Debug preprocessors
-            False,  # Skip preprocessors
-            64,  # Canny low threshold
-            128,  # Canny high threshold
+            True,  # Mixing image prompt and vary/upscale
+            True,  # Mixing image prompt and inpaint
+            True,  # Debug preprocessors
+            True,  # Skip preprocessors
+            1,  # Canny low threshold
+            1,  # Canny high threshold
             "joint",  # Refiner swap method
-            0.25,  # ControlNet softness
-            False,  # Enable advanced features
-            1.01,  # B1
-            1.02,  # B2
-            0.99,  # S1
-            0.95,  # S2
-            False,  # Debug inpaint preprocessing
-            False,  # Disable initial latent
-            "v2.6",  # Inpaint engine
-            1,  # Inpaint denoising strength
-            0.618,  # Inpaint respective field
-            False,  # Enable advanced masking
-            False,  # Invert mask
-            0,  # Mask erode/dilate
-            False,  # Save only final
-            False,  # Save metadata
+            0,  # ControlNet softness
+            True,  # Enable advanced features
+            0,  # B1
+            0,  # B2
+            0,  # S1
+            0,  # S2
+            True,  # Debug inpaint preprocessing
+            True,  # Disable initial latent
+            "None",  # Inpaint engine
+            0,  # Inpaint denoising strength
+            0,  # Inpaint respective field
+            True,  # Enable advanced masking
+            True,  # Invert mask
+            -64,  # Mask erode/dilate
+            True,  # Save only final
+            True,  # Save metadata
             "fooocus",  # Metadata scheme
             "",  # Image
             0,  # Stop at
@@ -140,72 +140,66 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             0,  # Stop at
             0,  # Weight
             "ImagePrompt",  # Type
-            False,  # Debug GroundingDINO
-            0,  # GroundingDINO box erode/dilate
-            False,  # Debug enhance masks
+            True,  # Debug GroundingDINO
+            -64,  # GroundingDINO box erode/dilate
+            True,  # Debug enhance masks
             "",  # Use with enhance
-            False,  # Enhance
+            True,  # Enhance
             "Disabled",  # Upscale or variation
             "Before First Enhancement",  # Order of processing
             "Original Prompts",  # Prompt
-            False,  # Enable
-            "",  # Detection prompt
-            "",  # Enhancement positive prompt
-            "",  # Enhancement negative prompt
-            "sam",  # Mask generation model
+            True,  # Enable
+            prompt,  # Detection prompt
+            prompt,  # Enhancement positive prompt
+            "!",  # Enhancement negative prompt
+            "u2net",  # Mask generation model
             "full",  # Cloth category
             "vit_b",  # SAM model
-            0.25,  # Text threshold
-            0.3,  # Box threshold
+            0,  # Text threshold
+            0,  # Box threshold
             0,  # Max detections
             True,  # Disable initial latent
-            "v2.6",  # Inpaint engine
-            1,  # Inpaint denoising strength
-            0.618,  # Inpaint respective field
-            0,  # Mask erode/dilate
-            False,  # Invert mask
-            False,  # Enable
-            "",  # Detection prompt
-            "",  # Enhancement positive prompt
-            "",  # Enhancement negative prompt
-            "sam",  # Mask generation model
+            "None",  # Inpaint engine
+            0,  # Inpaint denoising strength
+            0,  # Inpaint respective field
+            -64,  # Mask erode/dilate
+            True,  # Invert mask
+            True,  # Enable
+            prompt,  # Detection prompt
+            prompt,  # Enhancement positive prompt
+            "!",  # Enhancement negative prompt
+            "u2net",  # Mask generation model
             "full",  # Cloth category
             "vit_b",  # SAM model
-            0.25,  # Text threshold
-            0.3,  # Box threshold
+            0,  # Text threshold
+            0,  # Box threshold
             0,  # Max detections
             True,  # Disable initial latent
-            "v2.6",  # Inpaint engine
-            1,  # Inpaint denoising strength
-            0.618,  # Inpaint respective field
-            0,  # Mask erode/dilate
-            False,  # Invert mask
-            False,  # Enable
-            "",  # Detection prompt
-            "",  # Enhancement positive prompt
-            "",  # Enhancement negative prompt
-            "sam",  # Mask generation model
+            "None",  # Inpaint engine
+            0,  # Inpaint denoising strength
+            0,  # Inpaint respective field
+            -64,  # Mask erode/dilate
+            True,  # Invert mask
+            True,  # Enable
+            prompt,  # Detection prompt
+            prompt,  # Enhancement positive prompt
+            "!",  # Enhancement negative prompt
+            "u2net",  # Mask generation model
             "full",  # Cloth category
             "vit_b",  # SAM model
-            0.25,  # Text threshold
-            0.3,  # Box threshold
+            0,  # Text threshold
+            0,  # Box threshold
             0,  # Max detections
             True,  # Disable initial latent
-            "v2.6",  # Inpaint engine
-            1,  # Inpaint denoising strength
-            0.618,  # Inpaint respective field
-            0,  # Mask erode/dilate
-            False,  # Invert mask
+            "None",  # Inpaint engine
+            0,  # Inpaint denoising strength
+            0,  # Inpaint respective field
+            -64,  # Mask erode/dilate
+            True,  # Invert mask
             fn_index=67
         )
         
-        print("Job type:", type(job))
-        print("Job:", job)
-        print("================\n")
-        
-        # Получаем результат
-        result = client.predict(fn_index=68)
-        print("\n=== Second predict call ===")
+        print("\n=== API Result ===")
         print("Type:", type(result))
         print("Result:", result)
         print("================\n")
