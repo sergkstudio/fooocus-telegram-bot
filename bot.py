@@ -199,25 +199,29 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         result = client.predict(fn_index=68)
         logger.info(f"Fooocus API result: {result}")
         
-        # Отправляем сгенерированное изображение
+        # Очищаем кэш (fn_index=69-72)
+        for i in range(69, 73):
+            client.predict(fn_index=i)
+        
+        # Получаем путь к изображению из результата
         if result and isinstance(result, (list, tuple)) and len(result) >= 4:
-            # Получаем путь к изображению из галереи
-            gallery_path = result[2]  # 'Finished Images' Gallery component
-            if isinstance(gallery_path, str):
-                try:
-                    # Получаем изображение напрямую из галереи
-                    image_data = client.predict(gallery_path, fn_index=68, api_name="/file")
-                    if image_data:
-                        await update.message.reply_photo(photo=image_data)
-                    else:
-                        logger.error("Failed to download image from gallery")
-                        await update.message.reply_text('Не удалось загрузить изображение из галереи.')
-                except Exception as e:
-                    logger.error(f"Error sending photo: {e}")
-                    await update.message.reply_text('Не удалось отправить сгенерированное изображение.')
+            gallery_result = result[3]  # Gallery component
+            if isinstance(gallery_result, dict) and "value" in gallery_result and len(gallery_result["value"]) > 0:
+                image_info = gallery_result["value"][0]
+                if isinstance(image_info, dict) and "name" in image_info:
+                    image_path = image_info["name"]
+                    try:
+                        with open(image_path, 'rb') as photo:
+                            await update.message.reply_photo(photo=photo)
+                    except Exception as e:
+                        logger.error(f"Error sending photo: {e}")
+                        await update.message.reply_text('Не удалось отправить сгенерированное изображение.')
+                else:
+                    logger.error(f"Invalid image info format: {image_info}")
+                    await update.message.reply_text('Не удалось сгенерировать изображение: неверный формат информации об изображении.')
             else:
-                logger.error(f"Invalid gallery path type: {type(gallery_path)}")
-                await update.message.reply_text('Не удалось сгенерировать изображение: неверный тип пути к галерее.')
+                logger.error(f"Invalid gallery result format: {gallery_result}")
+                await update.message.reply_text('Не удалось сгенерировать изображение: неверный формат результата галереи.')
         else:
             logger.error(f"Invalid result format: {result}")
             await update.message.reply_text('Не удалось сгенерировать изображение: неверный формат результата.')
