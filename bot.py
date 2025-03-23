@@ -205,8 +205,8 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             gallery_path = result[2]  # 'Finished Images' Gallery component
             if isinstance(gallery_path, str):
                 try:
-                    # Скачиваем изображение с сервера
-                    image_data = client.predict(gallery_path, fn_index=68)
+                    # Получаем изображение напрямую из галереи
+                    image_data = client.predict(gallery_path, fn_index=68, api_name="/file")
                     if image_data:
                         await update.message.reply_photo(photo=image_data)
                     else:
