@@ -1,5 +1,6 @@
 import os
 import logging
+import asyncio  # Добавлен недостающий импорт
 import base64
 from io import BytesIO
 from telegram import Update
