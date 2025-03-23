@@ -199,6 +199,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Получаем результат
         result = client.predict(fn_index=68)
+        logger.info(f"Fooocus API result type: {type(result)}")
         logger.info(f"Fooocus API result: {result}")
         
         # Очистка кэша
@@ -209,6 +210,8 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if result and isinstance(result, (list, tuple)) and len(result) >= 4:
             # Получаем путь к изображению из компонента 'Preview' (индекс 1)
             image_path = result[1]
+            logger.info(f"Image path type: {type(image_path)}")
+            logger.info(f"Image path: {image_path}")
             if isinstance(image_path, str):
                 # Формируем URL для получения изображения
                 image_url = f"{GRADIO_URL}file={image_path}"
