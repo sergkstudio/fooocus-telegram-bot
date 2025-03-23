@@ -1,7 +1,7 @@
 import os
 import logging
-import asyncio
 import base64
+import tempfile
 from io import BytesIO
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
@@ -23,7 +23,8 @@ client = Client(FOOOCUS_API_URL)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        'Привет! Отправь мне текстовое описание для генерации изображения.'
+        "👋 Привет! Я бот для генерации изображений с помощью Fooocus. "
+        "Просто отправь мне текстовое описание."
     )
 
 async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -31,100 +32,46 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_message = await update.message.reply_text('🔄 Генерация начата...')
     
     try:
-        # Первый вызов - запуск генерации
-        client.predict(
-            False,  # Generate Image Grid
+        # Запуск генерации
+        job = client.submit(
             prompt,
-            "!",  # Negative Prompt
-            ["Fooocus V2"],  # Styles
-            "Quality",  # Performance
-            "1280×768",  # Aspect Ratio
-            1,  # Image Number
-            "png",  # Output Format
-            "0",  # Seed
-            False,  # Read Wildcards Order
-            2,  # Sharpness
-            7,  # Guidance Scale
-            "juggernautXL_v8Rundiffusion.safetensors",  # Base Model
-            "None",  # Refiner
-            0.5,  # Refiner Switch
-            True, "None", -2,  # LoRA 1
-            True, "None", -2,  # LoRA 2
-            True, "None", -2,  # LoRA 3
-            True, "None", -2,  # LoRA 4
-            True, "None", -2,  # LoRA 5
-            False, "", "Disabled", "", ["Left"], "", "", "",  # Image Inputs
-            True, True, True, False, 1.5, 0.8, 0.3, 7, 2,  # Debug Settings
-            "dpmpp_2m_sde_gpu", "karras", "Default (model)",  # Sampler
-            -1, -1, -1, -1, -1, -1, False, False, False, False,  # Overrides
-            64, 128, "joint", 0.25, False, 1.01, 1.02, 0.99, 0.95,  # Advanced
-            False, False, "v2.6", 1, 0.618,  # Misc
-            False, False, 0, False, False, "fooocus",  # Metadata
-            "", 0, 0, "ImagePrompt",  # Image Prompts
-            "", 0, 0, "ImagePrompt",
-            "", 0, 0, "ImagePrompt",
-            "", 0, 0, "ImagePrompt",
-            False, 0, False, "",  # Enhance
-            False, "Disabled", "Before First Enhancement", "Original Prompts",  # Enhance
-            False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,  # Enhance
-            "v2.6", 1, 0.618, 0, False,
-            False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
-            "v2.6", 1, 0.618, 0, False,
-            False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
-            "v2.6", 1, 0.618, 0, False,
-            fn_index=67
+            "!",  # Negative prompt
+            1,     # Number of images
+            fn_index=83  # Индекс для запуска генерации
         )
 
-        # Получение сырого ответа
-        result = client.predict(fn_index=68)
-        logger.info(f"Raw response type: {type(result)}")
+        # Ожидаем завершения
+        while not job.done():
+            if job.status().code == "generating":
+                await asyncio.sleep(2)
+            else:
+                break
 
-        # Рекурсивный поиск изображения
-        def extract_image(data):
-            if isinstance(data, list):
-                for item in data:
-                    if found := extract_image(item):
-                        return found
-            elif isinstance(data, dict):
-                if 'data' in data and isinstance(data['data'], str) and data['data'].startswith('data:image'):
-                    return data['data']
-                if 'name' in data and data['name'].endswith('.png'):
-                    return data['name']
-            return None
+        # Получаем результат
+        result = client.predict(fn_index=86)  # Индекс для получения результатов
+        logger.debug(f"Raw API response: {result}")
 
-        image_data = extract_image(result)
+        # Извлекаем base64 из ответа
+        if isinstance(result, list) and len(result) > 0:
+            image_base64 = result[0]
+            if isinstance(image_base64, str) and image_base64.startswith('data:image/png;base64,'):
+                image_data = base64.b64decode(image_base64.split(",", 1)[1])
+                
+                # Отправляем изображение
+                with BytesIO(image_data) as bio:
+                    bio.seek(0)
+                    await update.message.reply_photo(
+                        photo=bio,
+                        caption=f"Результат для: {prompt[:200]}"
+                    )
+                await status_message.delete()
+                return
 
-        if not image_data:
-            raise ValueError("Данные изображения не найдены в ответе")
-
-        # Обработка данных изображения
-        if isinstance(image_data, str) and image_data.startswith('data:image'):
-            _, encoded = image_data.split(",", 1)
-            image_bytes = base64.b64decode(encoded)
-        elif isinstance(image_data, str):
-            with open(image_data, "rb") as f:
-                image_bytes = f.read()
-        else:
-            raise ValueError("Неподдерживаемый формат данных изображения")
-
-        # Отправка через временный файл
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-            tmp.write(image_bytes)
-            tmp_path = tmp.name
-
-        try:
-            with open(tmp_path, "rb") as photo:
-                await update.message.reply_photo(
-                    photo=photo,
-                    caption=f"Результат: {prompt[:200]}"
-                )
-            await status_message.delete()
-        finally:
-            os.unlink(tmp_path)
+        raise ValueError("Не удалось получить изображение из ответа API")
 
     except Exception as e:
-        logger.error(f'Ошибка: {str(e)}', exc_info=True)
-        await status_message.edit_text(f'❌ Ошибка генерации: {str(e)}')
+        logger.error(f'Ошибка генерации: {str(e)}', exc_info=True)
+        await status_message.edit_text(f'❌ Ошибка: {str(e)}')
 
 def main():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
