@@ -1,7 +1,6 @@
 import os
 import logging
 import random
-import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from gradio_client import Client
@@ -19,19 +18,6 @@ logger = logging.getLogger(__name__)
 
 # Инициализация клиента Gradio
 GRADIO_URL = os.getenv('GRADIO_URL', 'http://localhost:7865/')
-logger.info(f"Initializing Gradio client with URL: {GRADIO_URL}")
-
-# Проверяем доступность сервера
-try:
-    response = requests.get(GRADIO_URL)
-    if response.status_code == 200:
-        logger.info("Fooocus server is available")
-    else:
-        logger.error(f"Fooocus server returned status code: {response.status_code}")
-except requests.exceptions.RequestException as e:
-    logger.error(f"Failed to connect to Fooocus server: {e}")
-    raise
-
 client = Client(GRADIO_URL)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -44,7 +30,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик текстовых сообщений для генерации изображений"""
     prompt = update.message.text
-    logger.info(f"Received prompt: {prompt}")
     
     # Отправляем сообщение о начале генерации
     status_message = await update.message.reply_text('Начинаю генерацию изображения...')
@@ -52,21 +37,18 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Генерируем случайное значение для seed
         seed = str(random.randint(1, 1000000))
-        logger.info(f"Generated seed: {seed}")
         
-        logger.info("Starting image generation with parameters:")
-        logger.info(f"Prompt: {prompt}")
-        logger.info(f"Seed: {seed}")
-        logger.info(f"GRADIO_URL: {GRADIO_URL}")
+        print("\n=== First predict call ===")
+        print("Prompt:", prompt)
+        print("Seed:", seed)
         
         # Запускаем генерацию (fn_index=67)
-        logger.info("Calling client.predict with fn_index=67")
-        result = client.predict(
+        job = client.predict(
             False,  # Generate Image Grid
             prompt,  # Positive prompt
             "!",  # Negative prompt
             ["Fooocus V2"],  # Style
-            "Speed",  # Performance
+            "Hyper-SD",  # Performance
             "1280×768",  # Aspect ratio
             1,  # Number of images
             "png",  # Output format
@@ -176,7 +158,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             0.25,  # Text threshold
             0.3,  # Box threshold
             0,  # Max detections
-            False,  # Disable initial latent
+            True,  # Disable initial latent
             "v2.6",  # Inpaint engine
             1,  # Inpaint denoising strength
             0.618,  # Inpaint respective field
@@ -192,7 +174,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             0.25,  # Text threshold
             0.3,  # Box threshold
             0,  # Max detections
-            False,  # Disable initial latent
+            True,  # Disable initial latent
             "v2.6",  # Inpaint engine
             1,  # Inpaint denoising strength
             0.618,  # Inpaint respective field
@@ -208,7 +190,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             0.25,  # Text threshold
             0.3,  # Box threshold
             0,  # Max detections
-            False,  # Disable initial latent
+            True,  # Disable initial latent
             "v2.6",  # Inpaint engine
             1,  # Inpaint denoising strength
             0.618,  # Inpaint respective field
@@ -217,48 +199,18 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fn_index=67
         )
         
-        logger.info("Received result from client.predict")
-        logger.info(f"Result type: {type(result)}")
-        logger.info(f"Result: {result}")
+        print("Job type:", type(job))
+        print("Job:", job)
+        print("================\n")
         
-        # Проверяем, что результат не None
-        if result is None:
-            logger.error("Received None result from client.predict")
-            await update.message.reply_text('Ошибка: не получен результат от API.')
-            return
-            
-        # Проверяем, что результат содержит путь к изображению
-        if isinstance(result, (list, tuple)) and len(result) >= 3:
-            image_path = result[2]
-            logger.info(f"Found image path: {image_path}")
-            
-            # Формируем URL для скачивания изображения
-            image_url = f"{GRADIO_URL}file={image_path}"
-            logger.info(f"Image URL: {image_url}")
-            
-            # Скачиваем изображение
-            response = requests.get(image_url)
-            if response.status_code == 200:
-                # Сохраняем изображение во временный файл
-                with open('temp_image.png', 'wb') as f:
-                    f.write(response.content)
-                logger.info("Image downloaded successfully")
-                
-                # Отправляем изображение пользователю
-                with open('temp_image.png', 'rb') as photo:
-                    await update.message.reply_photo(photo=photo)
-                logger.info("Image sent to user")
-                
-                # Удаляем временный файл
-                if os.path.exists('temp_image.png'):
-                    os.remove('temp_image.png')
-                    logger.info("Temporary file deleted")
-            else:
-                logger.error(f"Failed to download image. Status code: {response.status_code}")
-                await update.message.reply_text('Ошибка при скачивании изображения.')
-        else:
-            logger.error(f"Unexpected result format: {result}")
-            await update.message.reply_text('Ошибка: неверный формат результата от API.')
+        # Получаем результат
+        result = client.predict(fn_index=68)
+        print("\n=== Second predict call ===")
+        print("Type:", type(result))
+        print("Result:", result)
+        print("================\n")
+        
+        await update.message.reply_text('Изображение сгенерировано. Проверьте консоль для просмотра результата.')
             
     except Exception as e:
         logger.error(f"Error generating image: {e}")
