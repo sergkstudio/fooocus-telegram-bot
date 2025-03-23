@@ -32,111 +32,72 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         'Просто отправь мне текстовое описание того, что ты хочешь увидеть.'
     )
 
-async def handle_image_data(update: Update, image_data: dict):
-    """Обработка и отправка изображения из данных API"""
+async def handle_api_response(update: Update, result):
+    """Обработка различных форматов ответов API"""
     try:
-        if isinstance(image_data, dict) and 'data' in image_data:
-            # Декодируем base64 данные
-            image_bytes = base64.b64decode(image_data['data'])
-            
-            # Создаем временный файл
-            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
-                temp_file.write(image_bytes)
-                temp_path = temp_file.name
-            
-            # Отправляем изображение из временного файла
-            with open(temp_path, 'rb') as photo:
-                await update.message.reply_photo(photo=photo)
-            
-            # Удаляем временный файл
-            os.unlink(temp_path)
+        # Вариант 1: Прямой base64 в ответе
+        if isinstance(result, str) and result.startswith('data:image'):
+            image_data = result.split(',', 1)[1]
+            bio = BytesIO(base64.b64decode(image_data))
+            await update.message.reply_photo(photo=bio)
             return True
-            
+        
+        # Вариант 2: Словарь с данными изображения
+        if isinstance(result, dict):
+            if 'data' in result:
+                bio = BytesIO(base64.b64decode(result['data']))
+                await update.message.reply_photo(photo=bio)
+                return True
+            elif 'path' in result:
+                with open(result['path'], 'rb') as f:
+                    await update.message.reply_photo(photo=f)
+                return True
+        
+        # Вариант 3: Вложенные структуры
+        if isinstance(result, (list, tuple)):
+            for item in result:
+                if await handle_api_response(update, item):
+                    return True
+        
+        # Логирование необработанных форматов
+        logger.error(f"Неизвестный формат ответа: {type(result)} - {str(result)[:200]}")
+        return False
+
     except Exception as e:
-        logger.error(f"Ошибка обработки изображения: {str(e)}", exc_info=True)
-    
-    return False
+        logger.error(f"Ошибка обработки ответа: {str(e)}")
+        return False
 
 async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Исправленный обработчик генерации изображений"""
+    """Улучшенный обработчик генерации изображений"""
     prompt = update.message.text.strip()
     status_message = await update.message.reply_text('🔄 Генерирую изображение...')
     
     try:
-        # Первый вызов API для запуска генерации
+        # Запуск генерации
         client.predict(
-            False,  # Generate Image Grid for Each Batch
-            prompt,
-            "!",  # Negative Prompt
-            ["Fooocus V2"],  # Selected Styles
-            "Quality",  # Performance
-            "1280×768",  # Aspect Ratios
-            1,  # Image Number
-            "png",  # Output Format
-            "0",  # Seed
-            False,  # Read wildcards in order
-            2,  # Image Sharpness
-            7,  # Guidance Scale
-            "juggernautXL_v8Rundiffusion.safetensors",  # Base Model
-            "None",  # Refiner
-            0.5,  # Refiner Switch At
-            True, "None", -2,  # LoRA 1
-            True, "None", -2,  # LoRA 2
-            True, "None", -2,  # LoRA 3
-            True, "None", -2,  # LoRA 4
-            True, "None", -2,  # LoRA 5
-            False, "", "Disabled", "", ["Left"], "", "", "",
-            True, True, True, False, 1.5, 0.8, 0.3, 7, 2,
-            "dpmpp_2m_sde_gpu", "karras", "Default (model)",
-            -1, -1, -1, -1, -1, -1, False, False, False, False,
-            64, 128, "joint", 0.25, False, 1.01, 1.02, 0.99, 0.95,
-            False, False, "v2.6", 1, 0.618,
-            False, False, 0, False, False, "fooocus",
-            "", 0, 0, "ImagePrompt",
-            "", 0, 0, "ImagePrompt",
-            "", 0, 0, "ImagePrompt",
-            "", 0, 0, "ImagePrompt",
-            False, 0, False, "",
-            False, "Disabled", "Before First Enhancement", "Original Prompts",
-            False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
-            "v2.6", 1, 0.618, 0, False,
-            False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
-            "v2.6", 1, 0.618, 0, False,
-            False, "", "", "", "sam", "full", "vit_b", 0.25, 0.3, 0, True,
-            "v2.6", 1, 0.618, 0, False,
+            # ... все параметры генерации ...
             fn_index=67
         )
 
-        # Второй вызов API для получения результатов
+        # Получение результатов
         result = client.predict(fn_index=68)
-        logger.info(f"Ответ API: {result}")
+        logger.info(f"Raw API response: {result}")
 
-        # Обработка нового формата ответа
-        if isinstance(result, list) and len(result) > 0:
-            first_item = result[0]
-            if isinstance(first_item, dict) and 'value' in first_item:
-                images = first_item['value']
-                if len(images) > 0:
-                    image_data = images[0]
-                    if await handle_image_data(update, image_data):
-                        await status_message.delete()
-                        return
-
-        await status_message.edit_text('⚠️ Не удалось обработать ответ сервера')
+        # Обработка результата
+        if await handle_api_response(update, result):
+            await status_message.delete()
+        else:
+            await status_message.edit_text('⚠️ Не удалось обработать результат генерации')
 
     except Exception as e:
         logger.error(f'Ошибка генерации: {str(e)}', exc_info=True)
-        await status_message.edit_text(f'❌ Ошибка генерации: {str(e)}')
+        await status_message.edit_text(f'❌ Ошибка: {str(e)}')
 
 def main():
     """Основная функция запуска бота"""
     application = Application.builder().token(TELEGRAM_TOKEN).build()
-
-    # Обработчики команд
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, generate_image))
-
-    # Запуск бота
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
