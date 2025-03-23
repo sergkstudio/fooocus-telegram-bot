@@ -1,7 +1,6 @@
 import os
 import logging
 import random
-import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from gradio_client import Client
@@ -198,8 +197,20 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Получаем результат
         result = client.predict(fn_index=68)
-        print("Raw API result:", result)  # Прямой вывод результата
+        print("\n=== API Result ===")
+        print("Type:", type(result))
+        print("Result:", result)
+        print("================\n")
         
+        await update.message.reply_text('Изображение сгенерировано. Проверьте консоль для просмотра результата.')
+            
+    except Exception as e:
+        logger.error(f"Error generating image: {e}")
+        logger.error(f"Error type: {type(e)}")
+        logger.error(f"Error args: {e.args}")
+        await update.message.reply_text('Произошла ошибка при генерации изображения.')
+    finally:
+        await status_message.delete()
 
 def main():
     """Основная функция запуска бота"""
