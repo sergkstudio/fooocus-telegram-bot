@@ -6,7 +6,8 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from gradio_client import Client
 from dotenv import load_dotenv
-from urllib.parse import urljoin
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 
 # Загрузка переменных окружения
 load_dotenv()
@@ -196,43 +197,29 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             False,  # Invert mask
             fn_index=67
         )
-        
-        logger.info(f"First predict result type: {type(job)}")
-        logger.info(f"First predict result: {job}")
 
         # Получаем результат
         result = client.predict(fn_index=68)
-        logger.info(f"Second predict result type: {type(result)}")
-        logger.info(f"Second predict result: {result}")
+        logger.info(f"API result: {result}")
         
-        # Проверим тип возвращаемого результата
-        if isinstance(result, (list, tuple)) and len(result) >= 4:
-            # Получаем путь к изображению из компонента 'Finished Images' Gallery (индекс 2)
-            image_path = result[2]
-            if isinstance(image_path, str):
-                try:
-                    # Получаем изображение через client.predict
-                    image_data = client.predict(image_path, fn_index=68)
-                    if image_data:
-                        await update.message.reply_photo(photo=image_data)
-                    else:
-                        logger.error("Failed to get image data")
-                        await update.message.reply_text('Не удалось получить данные изображения.')
-                except Exception as e:
-                    logger.error(f"Error sending photo: {e}")
-                    await update.message.reply_text('Не удалось отправить сгенерированное изображение.')
-            else:
-                logger.error(f"Invalid image path type: {type(image_path)}")
-                await update.message.reply_text('Не удалось сгенерировать изображение: неверный тип пути к файлу.')
-        else:
-            logger.error(f"Invalid result format: {result}")
-            await update.message.reply_text('Не удалось сгенерировать изображение: неверный формат результата.')
+        # Получаем изображение из результата
+        img = mpimg.imread(result[2])
+        
+        # Сохраняем изображение во временный файл
+        plt.imsave('temp_image.png', img)
+        
+        # Отправляем изображение в Telegram
+        with open('temp_image.png', 'rb') as photo:
+            await update.message.reply_photo(photo=photo)
             
     except Exception as e:
         logger.error(f"Error generating image: {e}")
         await update.message.reply_text('Произошла ошибка при генерации изображения.')
     finally:
         await status_message.delete()
+        # Удаляем временный файл
+        if os.path.exists('temp_image.png'):
+            os.remove('temp_image.png')
 
 def main():
     """Запуск бота"""
