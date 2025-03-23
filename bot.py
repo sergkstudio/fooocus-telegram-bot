@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Инициализация клиента Gradio
 GRADIO_URL = os.getenv('GRADIO_URL', 'http://localhost:7865/')
-client = Client(GRADIO_URL)
+client = Client(GRADIO_URL, serialize=False)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start"""
