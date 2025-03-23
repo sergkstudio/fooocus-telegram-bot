@@ -75,40 +75,56 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fn_index=67
         )
 
-        # Второй вызов - получение результатов
+        # Получение сырого ответа
         result = client.predict(fn_index=68)
-        logger.info(f"API Response Structure: {type(result)} - {str(result)[:500]}")
+        logger.info(f"Raw response type: {type(result)}")
 
-        # Обработка структуры ответа
-        if isinstance(result, tuple) and len(result) >= 3:
-            gallery = result[2]  # Индекс 2 соответствует Finished Images Gallery
-            if isinstance(gallery, list) and len(gallery) > 0:
-                first_image = gallery[0]
-                if isinstance(first_image, dict):
-                    if 'data' in first_image:
-                        # Декодирование base64
-                        image_data = first_image['data'].split(",", 1)[1]
-                        image_bytes = base64.b64decode(image_data)
-                    elif 'name' in first_image:
-                        # Чтение из файла
-                        with open(first_image['name'], "rb") as f:
-                            image_bytes = f.read()
-                    else:
-                        raise ValueError("Неизвестный формат изображения")
-                    
-                    # Отправка изображения
-                    await update.message.reply_photo(
-                        photo=BytesIO(image_bytes),
-                        caption=f"Результат: {prompt[:200]}"
-                    )
-                    await status_message.delete()
-                    return
+        # Рекурсивный поиск изображения
+        def extract_image(data):
+            if isinstance(data, list):
+                for item in data:
+                    if found := extract_image(item):
+                        return found
+            elif isinstance(data, dict):
+                if 'data' in data and isinstance(data['data'], str) and data['data'].startswith('data:image'):
+                    return data['data']
+                if 'name' in data and data['name'].endswith('.png'):
+                    return data['name']
+            return None
 
-        raise ValueError("Изображение не найдено в ответе API")
+        image_data = extract_image(result)
+
+        if not image_data:
+            raise ValueError("Данные изображения не найдены в ответе")
+
+        # Обработка данных изображения
+        if isinstance(image_data, str) and image_data.startswith('data:image'):
+            _, encoded = image_data.split(",", 1)
+            image_bytes = base64.b64decode(encoded)
+        elif isinstance(image_data, str):
+            with open(image_data, "rb") as f:
+                image_bytes = f.read()
+        else:
+            raise ValueError("Неподдерживаемый формат данных изображения")
+
+        # Отправка через временный файл
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+            tmp.write(image_bytes)
+            tmp_path = tmp.name
+
+        try:
+            with open(tmp_path, "rb") as photo:
+                await update.message.reply_photo(
+                    photo=photo,
+                    caption=f"Результат: {prompt[:200]}"
+                )
+            await status_message.delete()
+        finally:
+            os.unlink(tmp_path)
 
     except Exception as e:
-        logger.error(f'Ошибка генерации: {str(e)}', exc_info=True)
-        await status_message.edit_text(f'❌ Ошибка: {str(e)}')
+        logger.error(f'Ошибка: {str(e)}', exc_info=True)
+        await status_message.edit_text(f'❌ Ошибка генерации: {str(e)}')
 
 def main():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
