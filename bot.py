@@ -38,6 +38,10 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Генерируем случайное значение для seed
         seed = str(random.randint(1, 1000000))
         
+        print("\n=== First predict call ===")
+        print("Prompt:", prompt)
+        print("Seed:", seed)
+        
         # Запускаем генерацию (fn_index=67)
         job = client.predict(
             False,  # Generate Image Grid
@@ -194,10 +198,14 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             False,  # Invert mask
             fn_index=67
         )
-
+        
+        print("Job type:", type(job))
+        print("Job:", job)
+        print("================\n")
+        
         # Получаем результат
         result = client.predict(fn_index=68)
-        print("\n=== API Result ===")
+        print("\n=== Second predict call ===")
         print("Type:", type(result))
         print("Result:", result)
         print("================\n")
