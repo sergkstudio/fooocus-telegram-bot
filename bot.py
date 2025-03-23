@@ -203,17 +203,26 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for i in range(69, 73):
             client.predict(fn_index=i)
         
-        # Получаем изображение (fn_index=73)
-        image_data = client.predict(fn_index=73)
-        if image_data:
-            try:
-                await update.message.reply_photo(photo=image_data)
-            except Exception as e:
-                logger.error(f"Error sending photo: {e}")
-                await update.message.reply_text('Не удалось отправить сгенерированное изображение.')
+        # Получаем результат с изображением (fn_index=73)
+        result = client.predict(fn_index=73)
+        logger.info(f"Fooocus API result with image: {result}")
+        
+        if result and isinstance(result, (list, tuple)) and len(result) >= 6:
+            # Получаем путь к изображению из компонента 'Preview' (индекс 5)
+            image_path = result[5]
+            if isinstance(image_path, str):
+                try:
+                    with open(image_path, 'rb') as photo:
+                        await update.message.reply_photo(photo=photo)
+                except Exception as e:
+                    logger.error(f"Error sending photo: {e}")
+                    await update.message.reply_text('Не удалось отправить сгенерированное изображение.')
+            else:
+                logger.error(f"Invalid image path type: {type(image_path)}")
+                await update.message.reply_text('Не удалось сгенерировать изображение: неверный тип пути к файлу.')
         else:
-            logger.error("Failed to get image data")
-            await update.message.reply_text('Не удалось получить данные изображения.')
+            logger.error(f"Invalid result format: {result}")
+            await update.message.reply_text('Не удалось сгенерировать изображение: неверный формат результата.')
             
     except Exception as e:
         logger.error(f"Error generating image: {e}")
