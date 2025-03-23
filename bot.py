@@ -44,7 +44,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             prompt,  # Positive prompt
             "!",  # Negative prompt
             ["Fooocus V2"],  # Style
-            "Quality",  # Performance
+            "Speed",  # Performance
             "1280×768",  # Aspect ratio
             1,  # Number of images
             "png",  # Output format
