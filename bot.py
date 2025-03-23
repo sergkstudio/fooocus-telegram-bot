@@ -199,11 +199,16 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         result = client.predict(fn_index=68)
         
         # Отправляем сгенерированное изображение
-        if result and len(result) > 2:
+        if result and isinstance(result, tuple) and len(result) > 2:
             image_path = result[2]  # Путь к сгенерированному изображению
-            await update.message.reply_photo(photo=open(image_path, 'rb'))
+            if isinstance(image_path, str) and os.path.exists(image_path):
+                await update.message.reply_photo(photo=open(image_path, 'rb'))
+            else:
+                logger.error(f"Invalid image path: {image_path}")
+                await update.message.reply_text('Не удалось сгенерировать изображение: неверный путь к файлу.')
         else:
-            await update.message.reply_text('Не удалось сгенерировать изображение.')
+            logger.error(f"Invalid result format: {result}")
+            await update.message.reply_text('Не удалось сгенерировать изображение: неверный формат результата.')
             
     except Exception as e:
         logger.error(f"Error generating image: {e}")
