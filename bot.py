@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Конфигурация API
 GRADIO_URL = os.getenv('GRADIO_URL', 'http://localhost:7865/')
-API_URL = f"{GRADIO_URL}/api/predict"
+API_URL = f"{GRADIO_URL}"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработчик команды /start"""
