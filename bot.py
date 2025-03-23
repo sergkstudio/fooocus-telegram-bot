@@ -33,7 +33,6 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_message = await update.message.reply_text('🔄 Генерация начата...')
     
     try:
-        # Создаем job для асинхронной обработки
         job = client.submit(
             False,  # Generate Image Grid
             prompt,
@@ -77,34 +76,30 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fn_index=67
         )
 
-        # Обработка событий
-        final_result = None
+        # Ожидание завершения генерации
         while not job.done():
-            await asyncio.sleep(0.1)
-            for event in job.communicator.events:
-                if event.event == "process_completed":
-                    final_result = job.outputs()
+            await asyncio.sleep(0.5)
+            progress = job.status().progress
+            if progress:
+                await status_message.edit_text(f'🚧 Прогресс: {progress * 100:.1f}%')
 
-        # Обработка результата
-        if final_result:
-            images = final_result[2]  # Finished Images Gallery
-            if images and len(images) > 0:
-                first_image = images[0]
-                
-                # Получаем base64 из данных изображения
-                if isinstance(first_image, dict) and 'data' in first_image:
-                    image_bytes = base64.b64decode(first_image['data'])
-                    bio = BytesIO(image_bytes)
-                    bio.seek(0)
-                    
-                    await update.message.reply_photo(
-                        photo=bio,
-                        caption=f"Результат: {prompt[:200]}"
-                    )
-                    await status_message.delete()
-                    return
+        # Получение результата
+        result = job.result()
+        
+        # Обработка изображения
+        if isinstance(result, (list, tuple)) and len(result) > 2:
+            image_data = result[2][0]  # Предполагаем что изображение в третьем элементе
+            
+            if isinstance(image_data, dict) and 'data' in image_data:
+                image_bytes = base64.b64decode(image_data['data'])
+                await update.message.reply_photo(
+                    photo=BytesIO(image_bytes),
+                    caption=f"Результат: {prompt[:200]}"
+                )
+                await status_message.delete()
+                return
 
-        await status_message.edit_text('⚠️ Не удалось сгенерировать изображение')
+        await status_message.edit_text('⚠️ Ошибка обработки результата')
 
     except Exception as e:
         logger.error(f'Ошибка генерации: {str(e)}', exc_info=True)
