@@ -49,7 +49,7 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 				"",	# str in 'Negative Prompt' Textbox component
 				["Fooocus V2"],	# List[str] in 'Selected Styles' Checkboxgroup component
 				"Quality",	# str in 'Performance' Radio component
-				"704×1408 <span style="color: grey;"> ∣ 1:2</span>",	# str in 'Aspect Ratios' Radio component
+				"704×1408",	# str in 'Aspect Ratios' Radio component
 				1,	# int | float (numeric value between 1 and 32)
 								in 'Image Number' Slider component
 				"png",	# str in 'Output Format' Radio component
