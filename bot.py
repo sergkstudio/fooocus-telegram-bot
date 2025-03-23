@@ -7,6 +7,8 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from gradio_client import Client
 from dotenv import load_dotenv
+import requests
+from requests.exceptions import RequestException
 
 # Загрузка переменных окружения
 load_dotenv()
@@ -21,18 +23,46 @@ logger = logging.getLogger(__name__)
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 FOOOCUS_API_URL = os.getenv('FOOOCUS_API_URL', 'http://localhost:7865')
 
-client = Client(FOOOCUS_API_URL)
+def check_server_availability():
+    try:
+        response = requests.get(f"{FOOOCUS_API_URL}/config", timeout=5)
+        return response.status_code == 200
+    except RequestException:
+        return False
+
+# Инициализация клиента только если сервер доступен
+client = None
+if check_server_availability():
+    client = Client(FOOOCUS_API_URL)
+else:
+    logger.error(f"Fooocus сервер недоступен по адресу {FOOOCUS_API_URL}")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if client is None:
+        await update.message.reply_text(
+            '⚠️ Сервис генерации изображений временно недоступен. Пожалуйста, попробуйте позже.'
+        )
+        return
+    
     await update.message.reply_text(
         'Привет! Отправь мне текстовое описание для генерации изображения.'
     )
 
 async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if client is None:
+        await update.message.reply_text(
+            '⚠️ Сервис генерации изображений временно недоступен. Пожалуйста, попробуйте позже.'
+        )
+        return
+
     prompt = update.message.text.strip()
     status_message = await update.message.reply_text('🔄 Генерация начата...')
     
     try:
+        # Проверка доступности сервера перед генерацией
+        if not check_server_availability():
+            raise Exception("Сервер Fooocus недоступен")
+
         # Запуск задачи генерации
         job = client.submit(
             False,  # Generate Image Grid
@@ -77,8 +107,13 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fn_index=67
         )
 
-        # Ожидание завершения без проверки прогресса
+        # Ожидание завершения с таймаутом
+        timeout = 300  # 5 минут
+        start_time = asyncio.get_event_loop().time()
+        
         while not job.done():
+            if asyncio.get_event_loop().time() - start_time > timeout:
+                raise TimeoutError("Превышено время ожидания генерации")
             await asyncio.sleep(1)
 
         # Получение результата
@@ -125,6 +160,9 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await status_message.edit_text(f'❌ Ошибка: {str(e)}')
 
 def main():
+    if client is None:
+        logger.error("Не удалось инициализировать клиент Fooocus. Бот запущен в ограниченном режиме.")
+    
     application = Application.builder().token(TELEGRAM_TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, generate_image))
