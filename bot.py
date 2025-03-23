@@ -1,10 +1,12 @@
 import os
 import logging
 import random
+import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from gradio_client import Client
 from dotenv import load_dotenv
+from urllib.parse import urljoin
 
 # Загрузка переменных окружения
 load_dotenv()
@@ -212,8 +214,17 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             image_path = result[5]
             if isinstance(image_path, str):
                 try:
-                    with open(image_path, 'rb') as photo:
-                        await update.message.reply_photo(photo=photo)
+                    # Формируем URL для получения изображения
+                    image_url = urljoin(GRADIO_URL, f"file={image_path}")
+                    logger.info(f"Requesting image from: {image_url}")
+                    
+                    # Получаем изображение через HTTP
+                    response = requests.get(image_url)
+                    if response.status_code == 200:
+                        await update.message.reply_photo(photo=response.content)
+                    else:
+                        logger.error(f"Failed to download image. Status code: {response.status_code}")
+                        await update.message.reply_text('Не удалось загрузить изображение с сервера.')
                 except Exception as e:
                     logger.error(f"Error sending photo: {e}")
                     await update.message.reply_text('Не удалось отправить сгенерированное изображение.')
