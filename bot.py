@@ -197,20 +197,27 @@ async def generate_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Получаем результат (fn_index=68)
         result = client.predict(fn_index=68)
+        logger.info(f"Fooocus API result: {result}")
         
         # Отправляем сгенерированное изображение
-        if result and isinstance(result, (list, tuple)) and len(result) > 2:
-            image_path = result[2]  # Путь к сгенерированному изображению
-            if isinstance(image_path, str):
+        if result and isinstance(result, (list, tuple)) and len(result) >= 4:
+            # Получаем путь к изображению из галереи
+            gallery_path = result[2]  # 'Finished Images' Gallery component
+            if isinstance(gallery_path, str):
                 try:
-                    with open(image_path, 'rb') as photo:
-                        await update.message.reply_photo(photo=photo)
+                    # Скачиваем изображение с сервера
+                    image_data = client.predict(gallery_path, fn_index=68)
+                    if image_data:
+                        await update.message.reply_photo(photo=image_data)
+                    else:
+                        logger.error("Failed to download image from gallery")
+                        await update.message.reply_text('Не удалось загрузить изображение из галереи.')
                 except Exception as e:
                     logger.error(f"Error sending photo: {e}")
                     await update.message.reply_text('Не удалось отправить сгенерированное изображение.')
             else:
-                logger.error(f"Invalid image path type: {type(image_path)}")
-                await update.message.reply_text('Не удалось сгенерировать изображение: неверный тип пути к файлу.')
+                logger.error(f"Invalid gallery path type: {type(gallery_path)}")
+                await update.message.reply_text('Не удалось сгенерировать изображение: неверный тип пути к галерее.')
         else:
             logger.error(f"Invalid result format: {result}")
             await update.message.reply_text('Не удалось сгенерировать изображение: неверный формат результата.')
