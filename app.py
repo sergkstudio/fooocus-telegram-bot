@@ -268,28 +268,24 @@ async def handle_message(update: Update, context):
 				fn_index=67
         )
         
-        # Ожидание завершения генерации
-#        while not job.done():
-#            time.sleep(2)
-#            await update.message.reply_text('⏳ Обрабатываю запрос...')
-        
-        # Шаг 2: Получение результатов
-        await update.message.reply_text('🔍 Получаю результат...')
-        result = client.predict(fn_index=68)
-        
-        # Извлечение URL изображения
-        if result and len(result) > 2:
-            gallery = result[2]
-            if isinstance(gallery, list) and len(gallery) > 0:
-                image_url = gallery[0]['url']
-                await update.message.reply_photo(image_url)
-                return
-                
-        await update.message.reply_text('❌ Не удалось получить изображение')
+# Вызов API для fn_index=68
+result = client.predict(
+    fn_index=68  # Индекс конечной точки API
+)
 
-    except Exception as e:
-        logging.error(f"Error: {str(e)}")
-        await update.message.reply_text('⚠️ Произошла ошибка при обработке запроса')
+# Обработка результата
+if isinstance(result, tuple) and len(result) >= 4:
+    html_output = result[0]      # HTML компонент
+    preview_image = result[1]    # Превью изображения
+    finished_gallery = result[2] # Галерея готовых изображений
+    main_gallery = result[3]     # Основная галерея
+    
+    print("HTML Output:", html_output)
+    print("Preview Image URL:", preview_image)
+    print("Finished Gallery URLs:", finished_gallery)
+    print("Main Gallery URLs:", main_gallery)
+else:
+    print("Unexpected response format:", result)
 
 def main():
     application = Application.builder().token(TOKEN).build()
