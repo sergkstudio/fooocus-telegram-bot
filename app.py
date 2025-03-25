@@ -274,7 +274,7 @@ result = client.predict(
 )
 
 # Обработка результата
-if isinstance(result, tuple) and len(result) >= 4:
+if isinstance(result, str) and len(result) >= 4:
     html_output = result[0]      # HTML компонент
     preview_image = result[1]    # Превью изображения
     finished_gallery = result[2] # Галерея готовых изображений
