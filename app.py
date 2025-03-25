@@ -271,25 +271,7 @@ async def handle_message(update: Update, context):
         # Шаг 2: Получение результатов
         await update.message.reply_text('🔄 Получаю результаты...')
         result = client.predict(fn_index=68)
-
-        # Обработка результата
-        if isinstance(result, tuple) and len(result) >= 4:
-            main_gallery = result[3]
-            if isinstance(main_gallery, str) and main_gallery.startswith("["):
-                import json
-                gallery_data = json.loads(main_gallery)
-                if gallery_data:
-                    await update.message.reply_photo(gallery_data[0]['url'])
-                    return
-                    
-            await update.message.reply_text('❌ Не удалось получить изображение')
-            
-        else:
-            await update.message.reply_text('⚠️ Ошибка формата ответа API')
-
-    except Exception as e:
-        logging.error(f"Error: {str(e)}")
-        await update.message.reply_text('🚫 Произошла ошибка при обработке запроса')
+        print(result)
 
 def main():
     application = Application.builder().token(TOKEN).build()
