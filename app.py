@@ -43,7 +43,7 @@ async def fooocus_api_call(prompt: str) -> str:
 				"",	# str #Negative Prompt' Textbox component
 				["Fooocus V2"],	# List[str] #Selected Styles' Checkboxgroup component
 				"Quality",	# str #Performance' Radio component
-				"704×1408 <span style="color: grey;"> ∣ 1:2</span>",	# str #Aspect Ratios' Radio component
+				"704×1408",	# str #Aspect Ratios' Radio component
 				1,	# int | float (numeric value between 1 and 32)
 								#Image Number' Slider component
 				"png",	# str #Output Format' Radio component
