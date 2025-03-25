@@ -6,7 +6,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from gradio_client import Client
 
 TOKEN = os.getenv('TELEGRAM_TOKEN')
-API_URL = "https://5817da969fa0f2145e.gradio.live/"
+API_URL = "http://192.168.252.100:7865"
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
