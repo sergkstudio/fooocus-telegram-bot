@@ -279,6 +279,7 @@ async def fooocus_api_call(prompt: str) -> str:
 				-64,	# int | float (numeric value between -64 and 64)
 								#Mask Erode or Dilate' Slider component
 				True,	# bool #Invert Mask' Checkbox component
+                fn_index=67
         ]
     }
     
