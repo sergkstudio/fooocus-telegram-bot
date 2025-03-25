@@ -273,6 +273,10 @@ async def handle_message(update: Update, context):
         result = client.predict(fn_index=68)
         print(result)
 
+    except Exception as e:
+        logging.error(f"Error: {str(e)}")
+        await update.message.reply_text('🚫 Произошла ошибка при обработке запроса')
+
 def main():
     application = Application.builder().token(TOKEN).build()
     application.add_handler(CommandHandler("start", start))
