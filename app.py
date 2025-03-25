@@ -23,7 +23,7 @@ async def handle_message(update: Update, context):
         
         # Шаг 1: Запуск генерации
         await update.message.reply_text('⚙️ Запускаю генерацию...')
-        job = client.submit(
+        job = client.predict(
             True, prompt, "", ["Fooocus V2"], 
             "Quality", "704×1408", 1, "png", "", True,
             0, 1.5, "juggernautXL_v8Rundiffusion.safetensors",
