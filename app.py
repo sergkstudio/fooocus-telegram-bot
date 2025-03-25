@@ -268,24 +268,28 @@ async def handle_message(update: Update, context):
 				fn_index=67
         )
         
-        # Вызов API для fn_index=68
-        result = client.predict(
-            fn_index=68  # Индекс конечной точки API
-        )
+        # Шаг 2: Получение результатов
+        await update.message.reply_text('🔄 Получаю результаты...')
+        result = client.predict(fn_index=68)
 
         # Обработка результата
-        if isinstance(result, str) and len(result) >= 4:
-            html_output = result[0]      # HTML компонент
-            preview_image = result[1]    # Превью изображения
-            finished_gallery = result[2] # Галерея готовых изображений
-            main_gallery = result[3]     # Основная галерея
+        if isinstance(result, tuple) and len(result) >= 4:
+            main_gallery = result[3]
+            if isinstance(main_gallery, str) and main_gallery.startswith("["):
+                import json
+                gallery_data = json.loads(main_gallery)
+                if gallery_data:
+                    await update.message.reply_photo(gallery_data[0]['url'])
+                    return
+                    
+            await update.message.reply_text('❌ Не удалось получить изображение')
             
-            print("HTML Output:", html_output)
-            print("Preview Image URL:", preview_image)
-            print("Finished Gallery URLs:", finished_gallery)
-            print("Main Gallery URLs:", main_gallery)
         else:
-            print("Unexpected response format:", result)
+            await update.message.reply_text('⚠️ Ошибка формата ответа API')
+
+    except Exception as e:
+        logging.error(f"Error: {str(e)}")
+        await update.message.reply_text('🚫 Произошла ошибка при обработке запроса')
 
 def main():
     application = Application.builder().token(TOKEN).build()
