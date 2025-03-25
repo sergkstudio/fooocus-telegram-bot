@@ -33,7 +33,7 @@ async def handle_message(update: Update, context):
 				1,	# int | float (numeric value between 1 and 32)
 								#Image Number' Slider component
 				"png",	# str #Output Format' Radio component
-				"",	# str #Seed' Textbox component
+				123123,	# str #Seed' Textbox component
 				True,	# bool #Read wildcards in order' Checkbox component
 				0,	# int | float (numeric value between 0.0 and 30.0)
 								#Image Sharpness' Slider component
