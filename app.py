@@ -268,24 +268,24 @@ async def handle_message(update: Update, context):
 				fn_index=67
         )
         
-    # Вызов API для fn_index=68
-    result = client.predict(
-        fn_index=68  # Индекс конечной точки API
-    )
+            # Вызов API для fn_index=68
+            result = client.predict(
+                fn_index=68  # Индекс конечной точки API
+            )
 
-    # Обработка результата
-    if isinstance(result, str) and len(result) >= 4:
-        html_output = result[0]      # HTML компонент
-        preview_image = result[1]    # Превью изображения
-        finished_gallery = result[2] # Галерея готовых изображений
-        main_gallery = result[3]     # Основная галерея
-        
-        print("HTML Output:", html_output)
-        print("Preview Image URL:", preview_image)
-        print("Finished Gallery URLs:", finished_gallery)
-        print("Main Gallery URLs:", main_gallery)
-    else:
-        print("Unexpected response format:", result)
+            # Обработка результата
+            if isinstance(result, str) and len(result) >= 4:
+                html_output = result[0]      # HTML компонент
+                preview_image = result[1]    # Превью изображения
+                finished_gallery = result[2] # Галерея готовых изображений
+                main_gallery = result[3]     # Основная галерея
+                
+                print("HTML Output:", html_output)
+                print("Preview Image URL:", preview_image)
+                print("Finished Gallery URLs:", finished_gallery)
+                print("Main Gallery URLs:", main_gallery)
+            else:
+                print("Unexpected response format:", result)
 
 def main():
     application = Application.builder().token(TOKEN).build()
