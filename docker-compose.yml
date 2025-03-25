@@ -1,7 +1,10 @@
 version: '3.8'
 
 services:
-  bot:
-    image: fooocus-bot
+  app:
     build: .
-    restart: unless-stopped
+    environment:
+      - TELEGRAM_TOKEN=ваш_токен_телеграм
+      - API_URL=ваш_api_url
+    ports:
+      - "5000:5000"  # Укажите порты, если необходимо
