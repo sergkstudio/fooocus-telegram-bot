@@ -6,7 +6,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from gradio_client import Client
 
 TOKEN = os.getenv('TELEGRAM_TOKEN')
-API_URL = "http://192.168.252.100:7865"
+API_URL = "http://192.168.252.100:7865/"
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -48,9 +48,9 @@ async def handle_message(update: Update, context):
         )
         
         # Ожидание завершения генерации
-        while not job.done():
-            time.sleep(2)
-            await update.message.reply_text('⏳ Обрабатываю запрос...')
+#        while not job.done():
+#            time.sleep(2)
+#            await update.message.reply_text('⏳ Обрабатываю запрос...')
         
         # Шаг 2: Получение результатов
         await update.message.reply_text('🔍 Получаю результат...')
