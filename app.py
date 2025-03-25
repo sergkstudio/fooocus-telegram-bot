@@ -283,7 +283,7 @@ async def fooocus_api_call(prompt: str) -> str:
     }
     
     try:
-        response = requests.post(f"{API_URL}/api/predict", json=payload)
+        response = requests.post(f"{API_URL}", json=payload)
         response.raise_for_status()
         result = response.json()
         
