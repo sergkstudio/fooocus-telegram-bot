@@ -19,7 +19,7 @@ async def start(update: Update, context):
 async def handle_message(update: Update, context):
     try:
         prompt = update.message.text
-        client = Client(API_URL)
+        client = Client(API_URL, serialize=False, validate=False)
         
         # Шаг 1: Запуск генерации
         await update.message.reply_text('⚙️ Запускаю генерацию...')
